@@ -28,379 +28,255 @@ ARTIFACT_DIR = BASE_DIR / "model_artifacts"
 
 
 # ============================================================
-# MODERN LIGHT CHOCOLATE + BLACK DESIGN
+# LIGHT CHOCOLATE + BLACK THEME
 # ============================================================
 
 st.markdown(
     """
     <style>
 
-    /* ========================================================
+    /* ================================
        GLOBAL
-       ======================================================== */
+       ================================ */
 
     .stApp {
-        background: #F7EFE5;
-        color: #17130F;
+        background-color: #F6EBDD;
     }
 
     .main .block-container {
-        max-width: 1400px;
+        max-width: 1450px;
         padding-top: 2rem;
         padding-bottom: 3rem;
     }
 
-    p, span, div, label {
-        color: #17130F;
+    /* ================================
+       TEXT
+       ================================ */
+
+    h1, h2, h3, h4, h5, h6 {
+        color: #1A1410 !important;
     }
 
-    /* ========================================================
+    p, label {
+        color: #3E3026 !important;
+    }
+
+    /* ================================
        SIDEBAR
-       ======================================================== */
+       ================================ */
 
     section[data-testid="stSidebar"] {
-        background: #E9D5BF;
-        border-right: 1px solid #D2B99D;
+        background-color: #E8D2BA;
+        border-right: 1px solid #CDB092;
     }
 
     section[data-testid="stSidebar"] * {
-        color: #17130F !important;
+        color: #1A1410 !important;
     }
 
-    section[data-testid="stSidebar"] h2,
-    section[data-testid="stSidebar"] h3 {
-        color: #17130F !important;
-    }
-
-    /* ========================================================
+    /* ================================
        HERO
-       ======================================================== */
+       ================================ */
 
-    .hero {
-        background: linear-gradient(
-            135deg,
-            #FFF9F2 0%,
-            #E8D2BA 100%
-        );
-
-        border: 1px solid #D6B99A;
+    .hero-card {
+        background-color: #FFF8F0;
+        border: 1px solid #D7BFA4;
         border-radius: 28px;
-        padding: 55px 55px 48px 55px;
-        margin-bottom: 28px;
-
-        box-shadow:
-            0 18px 45px rgba(71, 45, 25, 0.10);
-    }
-
-    .hero-icon {
-        font-size: 54px;
-        margin-bottom: 10px;
+        padding: 45px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 40px rgba(70, 45, 25, 0.10);
     }
 
     .hero-title {
         font-size: 58px;
-        line-height: 1.05;
         font-weight: 850;
         letter-spacing: -2px;
-        color: #17130F;
+        color: #17120E;
+        margin: 0;
     }
 
-    .hero-title span {
-        color: #70452A;
+    .hero-title-accent {
+        color: #70452B;
     }
 
-    .hero-description {
-        max-width: 800px;
-        margin-top: 16px;
-        font-size: 18px;
-        line-height: 1.7;
-        color: #59483A;
+    .hero-subtitle {
+        font-size: 20px;
+        color: #675344;
+        margin-top: 10px;
+        margin-bottom: 18px;
     }
 
-    .badge-row {
-        margin-top: 25px;
-    }
+    /* ================================
+       BADGES
+       ================================ */
 
     .badge {
         display: inline-block;
-        background: #17130F;
-        color: #FFF8EF !important;
-        border-radius: 999px;
-        padding: 9px 15px;
-        margin-right: 7px;
-        margin-bottom: 7px;
+        background-color: #1A1410;
+        color: #FFF8F0 !important;
+        border-radius: 30px;
+        padding: 8px 14px;
+        margin-right: 6px;
+        margin-bottom: 6px;
         font-size: 13px;
         font-weight: 600;
     }
 
-    /* ========================================================
-       SECTION HEADINGS
-       ======================================================== */
-
-    .section-title {
-        font-size: 31px;
-        font-weight: 800;
-        color: #17130F;
-        margin-top: 32px;
-        margin-bottom: 7px;
-        letter-spacing: -0.5px;
-    }
-
-    .section-description {
-        font-size: 16px;
-        color: #725F4F;
-        margin-bottom: 20px;
-    }
-
-    /* ========================================================
+    /* ================================
        SEARCH CARD
-       ======================================================== */
+       ================================ */
 
     .search-card {
-        background: #FFF9F2;
-        border: 1px solid #D8BFA5;
+        background-color: #FFF8F0;
+        border: 1px solid #D7BFA4;
         border-radius: 22px;
         padding: 25px;
-        margin-top: 15px;
-        margin-bottom: 30px;
-        box-shadow:
-            0 12px 30px rgba(71, 45, 25, 0.08);
+        margin-bottom: 28px;
+        box-shadow: 0 10px 28px rgba(70, 45, 25, 0.08);
     }
 
-    /* ========================================================
+    /* ================================
        INPUT
-       ======================================================== */
+       ================================ */
 
     div[data-baseweb="input"] {
-        background: #FFFFFF !important;
+        background-color: #FFFFFF !important;
+        border: 1px solid #BFA185 !important;
         border-radius: 12px !important;
-        border: 1px solid #C8AA8D !important;
     }
 
     div[data-baseweb="input"] input {
-        color: #17130F !important;
-        background: #FFFFFF !important;
+        color: #17120E !important;
+        background-color: #FFFFFF !important;
     }
 
     div[data-baseweb="input"] input::placeholder {
-        color: #8A7767 !important;
+        color: #8B7766 !important;
     }
 
-    /* ========================================================
+    /* ================================
        BUTTON
-       ======================================================== */
+       ================================ */
 
     .stButton > button {
-        width: 100%;
-        min-height: 48px;
-
-        background: #17130F;
-        color: #FFF9F2;
-
-        border: 1px solid #17130F;
+        background-color: #1A1410;
+        color: #FFF8F0;
+        border: 1px solid #1A1410;
         border-radius: 12px;
-
-        font-size: 15px;
+        min-height: 48px;
         font-weight: 700;
-
-        transition:
-            transform 0.2s ease,
-            background 0.2s ease;
+        transition: all 0.2s ease;
     }
 
     .stButton > button:hover {
-        background: #70452A;
+        background-color: #70452B;
         color: #FFFFFF;
-        border-color: #70452A;
+        border-color: #70452B;
         transform: translateY(-2px);
     }
 
-    /* ========================================================
-       RECOMMENDATION CARDS
-       ======================================================== */
+    /* ================================
+       BOOK CARD
+       ================================ */
 
     .book-card {
-        background: #FFF9F2;
-        border: 1px solid #D8BFA5;
+        background-color: #FFF8F0;
+        border: 1px solid #D7BFA4;
         border-radius: 20px;
-
-        padding: 17px;
-        margin-bottom: 22px;
-
-        box-shadow:
-            0 12px 30px rgba(71, 45, 25, 0.09);
-
-        transition:
-            transform 0.2s ease,
-            box-shadow 0.2s ease;
+        padding: 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 28px rgba(70, 45, 25, 0.08);
     }
 
-    .book-card:hover {
-        transform: translateY(-5px);
-
-        box-shadow:
-            0 18px 38px rgba(71, 45, 25, 0.15);
-    }
-
-    .rank {
+    .rank-badge {
         display: inline-block;
-
-        background: #E9D5BF;
-        color: #4A2F1D !important;
-
-        border-radius: 999px;
+        background-color: #E5CEB5;
+        color: #4C301E !important;
+        border-radius: 20px;
         padding: 6px 10px;
-
         font-size: 11px;
         font-weight: 800;
-
-        margin-bottom: 12px;
-    }
-
-    .book-title {
-        font-size: 19px;
-        line-height: 1.35;
-
-        font-weight: 800;
-
-        color: #17130F !important;
-
-        margin-top: 12px;
-        margin-bottom: 8px;
-    }
-
-    .book-author {
-        font-size: 14px;
-        color: #634F3F !important;
-        margin-bottom: 5px;
-    }
-
-    .book-publisher {
-        font-size: 13px;
-        color: #806D5C !important;
-        margin-bottom: 4px;
-    }
-
-    .book-isbn {
-        font-size: 12px;
-        color: #9A8877 !important;
-    }
-
-    /* ========================================================
-       INFO CARDS
-       ======================================================== */
-
-    .info-card {
-        background: #FFF9F2;
-        border: 1px solid #D8BFA5;
-        border-radius: 20px;
-        padding: 25px;
-
-        min-height: 210px;
-
-        box-shadow:
-            0 10px 25px rgba(71, 45, 25, 0.07);
-    }
-
-    .info-icon {
-        font-size: 34px;
         margin-bottom: 10px;
     }
 
-    .info-title {
+    .book-title-text {
         font-size: 19px;
         font-weight: 800;
-        margin-bottom: 9px;
+        color: #17120E !important;
+        line-height: 1.35;
+        margin-top: 10px;
+    }
+
+    .book-author-text {
+        font-size: 14px;
+        color: #634F40 !important;
+        margin-top: 7px;
+    }
+
+    .book-publisher-text {
+        font-size: 13px;
+        color: #806C5B !important;
+        margin-top: 5px;
+    }
+
+    .book-isbn-text {
+        font-size: 12px;
+        color: #9A8877 !important;
+        margin-top: 5px;
+    }
+
+    /* ================================
+       INFO CARDS
+       ================================ */
+
+    .info-card {
+        background-color: #FFF8F0;
+        border: 1px solid #D7BFA4;
+        border-radius: 20px;
+        padding: 25px;
+        min-height: 220px;
+        box-shadow: 0 10px 25px rgba(70, 45, 25, 0.07);
     }
 
     .info-text {
+        color: #675344 !important;
+        line-height: 1.65;
         font-size: 14px;
-        line-height: 1.7;
-        color: #6D5948 !important;
     }
 
-    /* ========================================================
+    /* ================================
        TECHNOLOGY CARDS
-       ======================================================== */
+       ================================ */
 
     .tech-card {
-        background: #E9D5BF;
-        border: 1px solid #D0B294;
+        background-color: #E8D2BA;
+        border: 1px solid #CDB092;
         border-radius: 18px;
-
         padding: 22px;
-
         text-align: center;
-
-        box-shadow:
-            0 8px 20px rgba(71, 45, 25, 0.06);
     }
 
-    .tech-icon {
-        font-size: 30px;
-        margin-bottom: 8px;
-    }
+    /* ================================
+       SIDEBAR BOX
+       ================================ */
 
-    .tech-name {
-        font-weight: 800;
-        font-size: 15px;
-    }
-
-    /* ========================================================
-       SIDEBAR CARDS
-       ======================================================== */
-
-    .sidebar-card {
-        background: #F7EBDD;
-        border: 1px solid #D2B99D;
-        border-radius: 16px;
-        padding: 16px;
+    .sidebar-box {
+        background-color: #F6EBDD;
+        border: 1px solid #CDB092;
+        border-radius: 15px;
+        padding: 15px;
         margin-top: 10px;
-        margin-bottom: 15px;
+        margin-bottom: 18px;
     }
 
-    .sidebar-title {
-        font-size: 14px;
-        font-weight: 800;
-        margin-bottom: 10px;
-    }
-
-    .weight-row {
-        display: flex;
-        justify-content: space-between;
-        padding: 6px 0;
-        font-size: 13px;
-    }
-
-    .weight-value {
-        font-weight: 800;
-        color: #70452A !important;
-    }
-
-    /* ========================================================
-       SUCCESS MESSAGE
-       ======================================================== */
-
-    div[data-testid="stAlert"] {
-        border-radius: 14px;
-    }
-
-    /* ========================================================
+    /* ================================
        FOOTER
-       ======================================================== */
+       ================================ */
 
-    .footer {
-        margin-top: 55px;
-        padding-top: 25px;
-
-        border-top: 1px solid #D6B99A;
-
-        text-align: center;
-
-        color: #806D5C !important;
-
-        font-size: 13px;
-        line-height: 1.8;
+    .footer-line {
+        border-top: 1px solid #D1B79A;
+        margin-top: 45px;
+        padding-top: 22px;
     }
 
     </style>
@@ -497,6 +373,10 @@ def load_artifacts():
     )
 
 
+# ============================================================
+# LOAD
+# ============================================================
+
 try:
 
     (
@@ -526,6 +406,7 @@ except Exception as e:
 
 # ============================================================
 # RECOMMENDATION FUNCTIONS
+# EXACT HYBRID LOGIC
 # ============================================================
 
 def recommend_popularity(user_id, top_n=10):
@@ -851,93 +732,48 @@ def recommend_hybrid(user_id, top_n=10):
 
 with st.sidebar:
 
-    st.markdown(
-        """
-        <div style="font-size:35px;">📚</div>
+    st.title("📚 BookWise")
 
-        <div style="
-            font-size:27px;
-            font-weight:850;
-            margin-bottom:3px;
-        ">
-            BookWise
-        </div>
-
-        <div style="
-            font-size:13px;
-            color:#725F4F !important;
-        ">
-            AI Book Recommendation System
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.caption(
+        "AI Book Recommendation System"
     )
 
     st.divider()
 
-    st.markdown("### 🤖 Recommendation Models")
+    st.subheader("🤖 Recommendation Models")
 
     st.markdown(
         """
-        <div class="sidebar-card">
+        📈 **Popularity-Based**
 
-        <div class="sidebar-title">
-        📈 Popularity-Based
-        </div>
+        📖 **Content-Based TF-IDF**
 
-        <div class="sidebar-title">
-        📖 Content-Based TF-IDF
-        </div>
+        👥 **Collaborative Filtering**
 
-        <div class="sidebar-title">
-        👥 Collaborative Filtering
-        </div>
+        🧮 **SVD**
 
-        <div class="sidebar-title">
-        🧮 SVD
-        </div>
-
-        <div class="sidebar-title">
-        🤖 Hybrid Recommendation
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+        🤖 **Hybrid Recommendation**
+        """
     )
 
-    st.markdown("### ⚖️ Hybrid Weights")
+    st.divider()
+
+    st.subheader("⚖️ Hybrid Weights")
 
     st.markdown(
         """
-        <div class="sidebar-card">
-
-        <div class="weight-row">
-            <span>Content</span>
-            <span class="weight-value">30%</span>
-        </div>
-
-        <div class="weight-row">
-            <span>Collaborative</span>
-            <span class="weight-value">30%</span>
-        </div>
-
-        <div class="weight-row">
-            <span>SVD</span>
-            <span class="weight-value">20%</span>
-        </div>
-
-        <div class="weight-row">
-            <span>Popularity</span>
-            <span class="weight-value">20%</span>
-        </div>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+        | Component | Weight |
+        |---|---:|
+        | Content | **30%** |
+        | Collaborative | **30%** |
+        | SVD | **20%** |
+        | Popularity | **20%** |
+        """
     )
 
-    st.markdown("### 📊 System")
+    st.divider()
+
+    st.subheader("📊 System")
 
     st.metric(
         "Recommendation Models",
@@ -949,83 +785,82 @@ with st.sidebar:
         "10"
     )
 
+    st.divider()
+
+    st.caption(
+        "BookWise • Machine Learning"
+    )
+
 
 # ============================================================
-# HERO
+# HERO SECTION
 # ============================================================
 
 st.markdown(
+    '<div class="hero-card">',
+    unsafe_allow_html=True
+)
+
+st.markdown("### 📚")
+
+st.markdown(
     """
-    <div class="hero">
+    # Book<span class="hero-title-accent">Wise</span>
+    """,
+    unsafe_allow_html=True
+)
 
-        <div class="hero-icon">
-            📚
-        </div>
-
-        <div class="hero-title">
-            Book<span>Wise</span>
-        </div>
-
-        <div class="hero-description">
-            Discover books you'll love using Machine Learning
-            powered recommendations based on reading behavior,
-            content similarity, collaborative patterns and
-            popularity.
-        </div>
-
-        <div class="badge-row">
-
-            <span class="badge">
-                🤖 Machine Learning
-            </span>
-
-            <span class="badge">
-                📖 Content Intelligence
-            </span>
-
-            <span class="badge">
-                👥 Collaborative Filtering
-            </span>
-
-            <span class="badge">
-                ⚡ Hybrid Recommendation
-            </span>
-
-        </div>
-
+st.markdown(
+    """
+    <div class="hero-subtitle">
+        AI Book Recommendation System
     </div>
     """,
     unsafe_allow_html=True
 )
 
-
-# ============================================================
-# SEARCH
-# ============================================================
+st.write(
+    "Discover books you'll love using Machine Learning "
+    "powered recommendations based on reading behavior, "
+    "content similarity, collaborative patterns and popularity."
+)
 
 st.markdown(
     """
-    <div class="section-title">
-        🔍 Find Your Next Read
-    </div>
-
-    <div class="section-description">
-        Enter your User ID and BookWise will generate
-        personalized recommendations.
-    </div>
+    <span class="badge">🤖 Machine Learning</span>
+    <span class="badge">📖 Content Intelligence</span>
+    <span class="badge">👥 Collaborative Filtering</span>
+    <span class="badge">⚡ Hybrid Recommendation</span>
     """,
     unsafe_allow_html=True
+)
+
+st.markdown(
+    "</div>",
+    unsafe_allow_html=True
+)
+
+
+# ============================================================
+# FIND YOUR NEXT READ
+# ============================================================
+
+st.header("🔍 Find Your Next Read")
+
+st.write(
+    "Enter your User ID and BookWise will generate "
+    "personalized recommendations."
 )
 
 user_id_input = st.text_input(
     "User ID",
-    placeholder="Example: 276704",
-    label_visibility="collapsed"
+    placeholder="Example: 276704"
 )
 
 recommend_button = st.button(
     "✨ Get My Recommendations",
-    type="primary"
+    type="primary",
+    use_container_width=True
 )
 
 
@@ -1089,14 +924,7 @@ if recommend_button:
                     "recommendations generated using Hybrid Intelligence."
                 )
 
-                st.markdown(
-                    """
-                    <div class="section-title">
-                        📚 Your Recommended Books
-                    </div>
-                    """,
-                    unsafe_allow_html=True
-                )
+                st.header("📚 Your Recommended Books")
 
                 for start in range(
                     0,
@@ -1158,11 +986,9 @@ if recommend_button:
                             st.markdown(
                                 f"""
                                 <div class="book-card">
-
-                                    <div class="rank">
+                                    <div class="rank-badge">
                                         #{rank} • HYBRID MATCH
                                     </div>
-
                                 </div>
                                 """,
                                 unsafe_allow_html=True
@@ -1179,57 +1005,31 @@ if recommend_button:
 
                                 except Exception:
 
-                                    st.markdown(
-                                        """
-                                        <div style="
-                                            height:300px;
-                                            display:flex;
-                                            align-items:center;
-                                            justify-content:center;
-                                            background:#E9D5BF;
-                                            border-radius:15px;
-                                            font-size:50px;
-                                        ">
-                                        📚
-                                        </div>
-                                        """,
-                                        unsafe_allow_html=True
+                                    st.info(
+                                        "📚 Cover image unavailable"
                                     )
 
                             else:
 
-                                st.markdown(
-                                    """
-                                    <div style="
-                                        height:300px;
-                                        display:flex;
-                                        align-items:center;
-                                        justify-content:center;
-                                        background:#E9D5BF;
-                                        border-radius:15px;
-                                        font-size:50px;
-                                    ">
-                                    📚
-                                    </div>
-                                    """,
-                                    unsafe_allow_html=True
+                                st.info(
+                                    "📚 Cover image unavailable"
                                 )
 
                             st.markdown(
                                 f"""
-                                <div class="book-title">
+                                <div class="book-title-text">
                                     {title}
                                 </div>
 
-                                <div class="book-author">
+                                <div class="book-author-text">
                                     ✍️ {author}
                                 </div>
 
-                                <div class="book-publisher">
+                                <div class="book-publisher-text">
                                     🏢 {publisher}
                                 </div>
 
-                                <div class="book-isbn">
+                                <div class="book-isbn-text">
                                     ISBN: {isbn}
                                 </div>
                                 """,
@@ -1243,94 +1043,58 @@ if recommend_button:
 # HOW BOOKWISE WORKS
 # ============================================================
 
-st.markdown(
-    """
-    <div class="section-title">
-        🧠 How BookWise Works
-    </div>
+st.header("🧠 How BookWise Works")
 
-    <div class="section-description">
-        Four machine-learning signals work together to create
-        the final Hybrid recommendation ranking.
-    </div>
-    """,
-    unsafe_allow_html=True
+st.write(
+    "Four machine-learning signals work together to create "
+    "the final Hybrid recommendation ranking."
 )
 
-col1, col2, col3 = st.columns(3)
+info1, info2, info3 = st.columns(3)
 
-with col1:
+with info1:
 
     st.markdown(
         """
         <div class="info-card">
-
-            <div class="info-icon">
-                📖
-            </div>
-
-            <div class="info-title">
-                Content-Based
-            </div>
-
-            <div class="info-text">
-                Uses TF-IDF and cosine similarity
-                to identify books with similar
-                content characteristics such as
-                title, author and publisher.
-            </div>
-
+        <h3>📖 Content-Based</h3>
+        <div class="info-text">
+        Uses TF-IDF and cosine similarity to identify
+        books with similar content characteristics
+        such as title, author and publisher.
+        </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-with col2:
+with info2:
 
     st.markdown(
         """
         <div class="info-card">
-
-            <div class="info-icon">
-                👥
-            </div>
-
-            <div class="info-title">
-                Collaborative Filtering
-            </div>
-
-            <div class="info-text">
-                Finds users with similar reading
-                behavior and uses their interactions
-                to discover books that may interest
-                the target user.
-            </div>
-
+        <h3>👥 Collaborative Filtering</h3>
+        <div class="info-text">
+        Finds users with similar reading behavior
+        and uses their interactions to discover
+        books that may interest the target user.
+        </div>
         </div>
         """,
         unsafe_allow_html=True
     )
 
-with col3:
+with info3:
 
     st.markdown(
         """
         <div class="info-card">
-
-            <div class="info-icon">
-                🤖
-            </div>
-
-            <div class="info-title">
-                Hybrid Intelligence
-            </div>
-
-            <div class="info-text">
-                Combines Content, Collaborative,
-                SVD and Popularity signals into
-                one final recommendation ranking.
-            </div>
-
+        <h3>🤖 Hybrid Intelligence</h3>
+        <div class="info-text">
+        Combines Content, Collaborative, SVD and
+        Popularity signals into one final
+        recommendation ranking.
+        </div>
         </div>
         """,
         unsafe_allow_html=True
@@ -1341,14 +1105,7 @@ with col3:
 # TECHNOLOGY STACK
 # ============================================================
 
-st.markdown(
-    """
-    <div class="section-title">
-        ⚙️ Technology Stack
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+st.header("⚙️ Technology Stack")
 
 tech1, tech2, tech3, tech4 = st.columns(4)
 
@@ -1357,8 +1114,8 @@ with tech1:
     st.markdown(
         """
         <div class="tech-card">
-            <div class="tech-icon">🐍</div>
-            <div class="tech-name">Python</div>
+        <h2>🐍</h2>
+        <b>Python</b>
         </div>
         """,
         unsafe_allow_html=True
@@ -1369,8 +1126,8 @@ with tech2:
     st.markdown(
         """
         <div class="tech-card">
-            <div class="tech-icon">🧠</div>
-            <div class="tech-name">Scikit-learn</div>
+        <h2>🧠</h2>
+        <b>Scikit-learn</b>
         </div>
         """,
         unsafe_allow_html=True
@@ -1381,8 +1138,8 @@ with tech3:
     st.markdown(
         """
         <div class="tech-card">
-            <div class="tech-icon">📊</div>
-            <div class="tech-name">Machine Learning</div>
+        <h2>📊</h2>
+        <b>Machine Learning</b>
         </div>
         """,
         unsafe_allow_html=True
@@ -1393,8 +1150,8 @@ with tech4:
     st.markdown(
         """
         <div class="tech-card">
-            <div class="tech-icon">🚀</div>
-            <div class="tech-name">Streamlit</div>
+        <h2>🚀</h2>
+        <b>Streamlit</b>
         </div>
         """,
         unsafe_allow_html=True
@@ -1407,21 +1164,20 @@ with tech4:
 
 st.markdown(
     """
-    <div class="footer">
-
-        📚 <b>BookWise</b> —
-        Machine Learning Book Recommendation System
-
-        <br>
-
-        Built with Python • Scikit-learn • Streamlit
-
-        <br>
-
-        Hybrid Recommendation • Content Similarity •
-        Collaborative Filtering • SVD
-
-    </div>
+    <div class="footer-line"></div>
     """,
     unsafe_allow_html=True
+)
+
+st.caption(
+    "📚 BookWise — Machine Learning Book Recommendation System"
+)
+
+st.caption(
+    "Built with Python • Scikit-learn • Streamlit"
+)
+
+st.caption(
+    "Hybrid Recommendation • Content Similarity • "
+    "Collaborative Filtering • SVD"
 )
