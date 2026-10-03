@@ -1,10 +1,9 @@
-import os
-import json
-import joblib
-import numpy as np
-import pandas as pd
 import streamlit as st
-
+import pandas as pd
+import numpy as np
+import joblib
+import json
+from pathlib import Path
 from sklearn.metrics.pairwise import cosine_similarity
 
 
@@ -13,11 +12,19 @@ from sklearn.metrics.pairwise import cosine_similarity
 # ============================================================
 
 st.set_page_config(
-    page_title="BookWise | AI Book Recommendation System",
+    page_title="BookWise - AI Book Recommendation System",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
 )
+
+
+# ============================================================
+# PATH CONFIGURATION
+# ============================================================
+
+BASE_DIR = Path(__file__).resolve().parent
+ARTIFACT_DIR = BASE_DIR / "model_artifacts"
 
 
 # ============================================================
@@ -28,387 +35,127 @@ st.markdown(
     """
     <style>
 
-    /* ========================================================
-       GLOBAL PAGE
-       ======================================================== */
-
     .stApp {
-        background:
-            linear-gradient(
-                rgba(8, 15, 30, 0.96),
-                rgba(15, 23, 42, 0.98)
-            ),
-            url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2200&q=85");
-
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
+        background-color: #f7f9fc;
     }
 
-    .block-container {
-        max-width: 1250px;
-        padding-top: 2rem;
-        padding-bottom: 4rem;
-    }
-
-    /* ========================================================
-       SIDEBAR
-       ======================================================== */
-
-    [data-testid="stSidebar"] {
-        background: linear-gradient(
-            180deg,
-            #070d1a 0%,
-            #0f172a 55%,
-            #172033 100%
-        );
-
-        border-right: 1px solid rgba(255,255,255,0.08);
-    }
-
-    [data-testid="stSidebar"] * {
-        color: #e5e7eb;
-    }
-
-    .sidebar-brand {
-        text-align: center;
-        padding: 10px 5px 18px 5px;
-    }
-
-    .sidebar-logo {
-        font-size: 45px;
-        margin-bottom: 4px;
-    }
-
-    .sidebar-title {
-        font-size: 25px;
+    .main-title {
+        font-size: 48px;
         font-weight: 800;
-        color: #ffffff;
+        margin-bottom: 5px;
     }
 
-    .sidebar-subtitle {
-        color: #94a3b8;
-        font-size: 12px;
-        margin-top: 5px;
+    .main-title span {
+        color: #ff4b4b;
     }
 
-    .sidebar-heading {
-        color: #94a3b8;
-        font-size: 11px;
-        font-weight: 800;
-        text-transform: uppercase;
-        letter-spacing: 1.4px;
-        margin-top: 20px;
+    .subtitle {
+        font-size: 19px;
+        color: #666666;
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        font-size: 30px;
+        font-weight: 750;
+        margin-top: 25px;
         margin-bottom: 10px;
     }
 
-    .sidebar-model {
-        background: rgba(255,255,255,0.05);
-        border: 1px solid rgba(255,255,255,0.07);
-        border-radius: 10px;
-        padding: 9px 11px;
-        margin-bottom: 7px;
-        font-size: 13px;
-    }
-
-    .sidebar-weight {
-        display: flex;
-        justify-content: space-between;
-        padding: 7px 2px;
-        font-size: 13px;
-        color: #cbd5e1;
-    }
-
-    .sidebar-weight-value {
-        color: #ffffff;
-        font-weight: 700;
-    }
-
-    /* ========================================================
-       HERO
-       ======================================================== */
-
-    .hero-box {
-        background: linear-gradient(
-            135deg,
-            rgba(15,23,42,0.98),
-            rgba(30,41,59,0.95)
-        );
-
-        border: 1px solid rgba(255,255,255,0.10);
-        border-radius: 28px;
-
-        padding: 50px 35px;
-
-        text-align: center;
-
-        box-shadow:
-            0 25px 70px rgba(0,0,0,0.35);
-
-        margin-bottom: 28px;
-    }
-
-    .hero-icon {
-        font-size: 52px;
-    }
-
-    .hero-title {
-        color: white;
-        font-size: 52px;
-        font-weight: 850;
-        margin: 5px 0 10px 0;
-        letter-spacing: -2px;
-    }
-
-    .hero-title span {
-        color: #cbd5e1;
-    }
-
-    .hero-description {
-        color: #cbd5e1;
-        max-width: 720px;
-        margin: auto;
+    .section-text {
+        color: #666666;
         font-size: 16px;
-        line-height: 1.7;
-    }
-
-    .badge-row {
-        margin-top: 22px;
+        margin-bottom: 20px;
     }
 
     .badge {
         display: inline-block;
-        padding: 7px 13px;
+        padding: 8px 14px;
         margin: 4px;
         border-radius: 20px;
-        background: rgba(255,255,255,0.07);
-        border: 1px solid rgba(255,255,255,0.09);
-        color: #cbd5e1;
-        font-size: 12px;
-        font-weight: 600;
-    }
-
-    /* ========================================================
-       SEARCH SECTION
-       ======================================================== */
-
-    .search-heading {
-        color: white;
-        font-size: 26px;
-        font-weight: 800;
-        margin-bottom: 4px;
-    }
-
-    .search-description {
-        color: #94a3b8;
+        background-color: #eef2ff;
+        color: #333333;
         font-size: 14px;
-        margin-bottom: 14px;
-    }
-
-    div[data-baseweb="input"] {
-        border-radius: 12px;
-    }
-
-    div[data-baseweb="input"] input {
-        color: #0f172a !important;
         font-weight: 600;
     }
 
-    .stButton > button {
-        min-height: 46px;
+    .metric-box {
+        padding: 18px;
         border-radius: 12px;
-        font-size: 15px;
+        background-color: white;
+        border: 1px solid #e6e6e6;
+        text-align: center;
+        margin-bottom: 15px;
+    }
+
+    .metric-number {
+        font-size: 28px;
         font-weight: 750;
-        border: 0;
-        background: #ffffff;
-        color: #0f172a;
-        transition: all 0.2s ease;
     }
 
-    .stButton > button:hover {
-        background: #e2e8f0;
-        color: #020617;
-        transform: translateY(-2px);
-    }
-
-    /* ========================================================
-       SECTION HEADINGS
-       ======================================================== */
-
-    .section-title {
-        color: white;
-        font-size: 30px;
-        font-weight: 850;
-        margin-top: 20px;
-        margin-bottom: 3px;
-    }
-
-    .section-subtitle {
-        color: #94a3b8;
-        font-size: 13px;
-        margin-bottom: 20px;
-    }
-
-    /* ========================================================
-       BOOK CARD
-       ======================================================== */
-
-    .book-card {
-        background: rgba(255,255,255,0.97);
-        border-radius: 18px;
-        padding: 14px;
-        min-height: 500px;
-
-        border: 1px solid rgba(255,255,255,0.7);
-
-        box-shadow:
-            0 12px 32px rgba(0,0,0,0.20);
-    }
-
-    .book-card:hover {
-        box-shadow:
-            0 18px 42px rgba(0,0,0,0.28);
+    .metric-label {
+        color: #777777;
+        font-size: 14px;
     }
 
     .book-rank {
-        display: inline-block;
-        background: #0f172a;
-        color: white;
-        padding: 5px 10px;
-        border-radius: 20px;
-        font-size: 11px;
-        font-weight: 800;
-        margin-bottom: 12px;
-    }
-
-    .book-cover {
-        height: 260px;
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-
-        background: linear-gradient(
-            145deg,
-            #f1f5f9,
-            #e2e8f0
-        );
-
-        border-radius: 14px;
-        overflow: hidden;
-        margin-bottom: 14px;
-    }
-
-    .book-cover img {
-        max-height: 245px;
-        max-width: 170px;
-        object-fit: contain;
-        border-radius: 6px;
-        box-shadow: 0 8px 20px rgba(0,0,0,0.18);
-    }
-
-    .book-placeholder {
-        font-size: 60px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #ff4b4b;
+        margin-bottom: 8px;
     }
 
     .book-title {
-        color: #0f172a;
-        font-size: 17px;
-        font-weight: 800;
-        line-height: 1.35;
-        min-height: 46px;
-        margin-bottom: 8px;
-    }
-
-    .book-detail {
-        color: #475569;
-        font-size: 12px;
-        line-height: 1.55;
+        font-size: 20px;
+        font-weight: 750;
+        margin-top: 8px;
         margin-bottom: 5px;
     }
 
-    .book-isbn {
-        color: #94a3b8;
-        font-size: 10px;
-        font-family: monospace;
-        margin-top: 7px;
+    .book-author {
+        font-size: 15px;
+        color: #555555;
+        margin-bottom: 5px;
     }
 
-    /* ========================================================
-       INFORMATION SECTION
-       ======================================================== */
+    .book-meta {
+        font-size: 13px;
+        color: #777777;
+    }
+
+    .info-box {
+        padding: 20px;
+        border-radius: 12px;
+        background-color: white;
+        border: 1px solid #e6e6e6;
+        min-height: 180px;
+    }
 
     .info-title {
-        color: white;
-        font-size: 28px;
-        font-weight: 850;
-        margin-top: 45px;
-        margin-bottom: 18px;
-    }
-
-    .info-card {
-        background: rgba(255,255,255,0.96);
-        border-radius: 18px;
-        padding: 22px;
-        min-height: 205px;
-
-        box-shadow:
-            0 12px 30px rgba(0,0,0,0.16);
-    }
-
-    .info-icon {
-        font-size: 30px;
+        font-size: 19px;
+        font-weight: 700;
         margin-bottom: 8px;
     }
 
-    .info-card-title {
-        color: #0f172a;
-        font-size: 18px;
-        font-weight: 800;
-        margin-bottom: 8px;
+    .info-text {
+        color: #666666;
+        font-size: 14px;
+        line-height: 1.6;
     }
 
-    .info-card-text {
-        color: #64748b;
-        font-size: 13px;
-        line-height: 1.65;
-    }
-
-    /* ========================================================
-       TECHNOLOGY
-       ======================================================== */
-
-    .tech-card {
-        background: rgba(255,255,255,0.06);
-        border: 1px solid rgba(255,255,255,0.10);
-        border-radius: 16px;
-        padding: 18px;
+    .tech-box {
+        padding: 20px;
+        border-radius: 12px;
+        background-color: white;
+        border: 1px solid #e6e6e6;
         text-align: center;
     }
-
-    .tech-icon {
-        font-size: 30px;
-    }
-
-    .tech-name {
-        color: white;
-        font-size: 13px;
-        font-weight: 700;
-        margin-top: 6px;
-    }
-
-    /* ========================================================
-       FOOTER
-       ======================================================== */
 
     .footer {
         text-align: center;
-        color: #94a3b8;
-        margin-top: 55px;
-        padding-top: 25px;
-        border-top: 1px solid rgba(255,255,255,0.10);
-        font-size: 12px;
-        line-height: 1.8;
+        color: #777777;
+        padding: 30px 0 10px 0;
+        font-size: 14px;
     }
 
     </style>
@@ -418,330 +165,129 @@ st.markdown(
 
 
 # ============================================================
-# ARTIFACT DIRECTORY
-# ============================================================
-
-ARTIFACT_DIR = os.path.join(
-    os.path.dirname(__file__),
-    "model_artifacts"
-)
-
-
-# ============================================================
-# LOAD MODEL ARTIFACTS
+# LOAD ARTIFACTS
 # ============================================================
 
 @st.cache_resource
 def load_artifacts():
 
-    required_files = [
-        "tfidf_vectorizer.pkl",
-        "tfidf_matrix.pkl",
-        "isbn_to_index.pkl",
-        "knn_model.pkl",
-        "user_book_sparse.pkl",
-        "user_to_index.pkl",
-        "svd_model.pkl",
-        "user_factors.pkl",
-        "book_factors.pkl",
-        "train_user_ids.pkl",
-        "train_isbn_ids.pkl",
-        "popularity_rank.pkl",
-        "book_info.pkl",
-        "train_history.pkl",
-        "hybrid_config.json"
-    ]
-
-    missing_files = [
-        file_name
-        for file_name in required_files
-        if not os.path.exists(
-            os.path.join(
-                ARTIFACT_DIR,
-                file_name
-            )
-        )
-    ]
-
-    if missing_files:
-        raise FileNotFoundError(
-            "Missing model artifact files: "
-            + ", ".join(missing_files)
-        )
-
-    artifacts = {}
-
-    artifacts["tfidf_vectorizer"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "tfidf_vectorizer.pkl"
-        )
+    tfidf_vectorizer = joblib.load(
+        ARTIFACT_DIR / "tfidf_vectorizer.pkl"
     )
 
-    artifacts["tfidf_matrix"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "tfidf_matrix.pkl"
-        )
+    tfidf_matrix = joblib.load(
+        ARTIFACT_DIR / "tfidf_matrix.pkl"
     )
 
-    artifacts["isbn_to_index"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "isbn_to_index.pkl"
-        )
+    isbn_to_index = joblib.load(
+        ARTIFACT_DIR / "isbn_to_index.pkl"
     )
 
-    artifacts["knn_model"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "knn_model.pkl"
-        )
+    knn_model = joblib.load(
+        ARTIFACT_DIR / "knn_model.pkl"
     )
 
-    artifacts["user_book_sparse"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "user_book_sparse.pkl"
-        )
+    user_book_sparse = joblib.load(
+        ARTIFACT_DIR / "user_book_sparse.pkl"
     )
 
-    artifacts["user_to_index"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "user_to_index.pkl"
-        )
+    user_to_index = joblib.load(
+        ARTIFACT_DIR / "user_to_index.pkl"
     )
 
-    artifacts["svd_model"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "svd_model.pkl"
-        )
+    svd_model = joblib.load(
+        ARTIFACT_DIR / "svd_model.pkl"
     )
 
-    artifacts["user_factors"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "user_factors.pkl"
-        )
+    user_factors = joblib.load(
+        ARTIFACT_DIR / "user_factors.pkl"
     )
 
-    artifacts["book_factors"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "book_factors.pkl"
-        )
+    book_factors = joblib.load(
+        ARTIFACT_DIR / "book_factors.pkl"
     )
 
-    artifacts["train_user_ids"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "train_user_ids.pkl"
-        )
+    train_user_ids = joblib.load(
+        ARTIFACT_DIR / "train_user_ids.pkl"
     )
 
-    artifacts["train_isbn_ids"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "train_isbn_ids.pkl"
-        )
+    train_isbn_ids = joblib.load(
+        ARTIFACT_DIR / "train_isbn_ids.pkl"
     )
 
-    artifacts["popularity_rank"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "popularity_rank.pkl"
-        )
+    popularity_rank = joblib.load(
+        ARTIFACT_DIR / "popularity_rank.pkl"
     )
 
-    artifacts["book_info"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "book_info.pkl"
-        )
+    book_info = joblib.load(
+        ARTIFACT_DIR / "book_info.pkl"
     )
 
-    artifacts["train_history"] = joblib.load(
-        os.path.join(
-            ARTIFACT_DIR,
-            "train_history.pkl"
-        )
+    train_history = joblib.load(
+        ARTIFACT_DIR / "train_history.pkl"
     )
 
     with open(
-        os.path.join(
-            ARTIFACT_DIR,
-            "hybrid_config.json"
-        ),
-        "r",
-        encoding="utf-8"
-    ) as file:
+        ARTIFACT_DIR / "hybrid_config.json",
+        "r"
+    ) as f:
+        hybrid_config = json.load(f)
 
-        artifacts["hybrid_config"] = json.load(file)
+    return (
+        tfidf_vectorizer,
+        tfidf_matrix,
+        isbn_to_index,
+        knn_model,
+        user_book_sparse,
+        user_to_index,
+        svd_model,
+        user_factors,
+        book_factors,
+        train_user_ids,
+        train_isbn_ids,
+        popularity_rank,
+        book_info,
+        train_history,
+        hybrid_config
+    )
 
-    return artifacts
-
-
-# ============================================================
-# LOAD ARTIFACTS
-# ============================================================
 
 try:
 
-    artifacts = load_artifacts()
+    (
+        tfidf_vectorizer,
+        tfidf_matrix,
+        isbn_to_index,
+        knn_model,
+        user_book_sparse,
+        user_to_index,
+        svd_model,
+        user_factors,
+        book_factors,
+        train_user_ids,
+        train_isbn_ids,
+        popularity_rank,
+        book_info,
+        train_history,
+        hybrid_config
+    ) = load_artifacts()
 
-except Exception as error:
+    artifacts_loaded = True
 
-    st.error(
-        "Unable to load the recommendation system."
-    )
+except Exception as e:
 
-    st.code(str(error))
+    artifacts_loaded = False
 
+    st.error("Unable to load model artifacts.")
+    st.exception(e)
     st.stop()
 
 
 # ============================================================
-# ASSIGN ARTIFACTS
+# RECOMMENDATION FUNCTIONS
 # ============================================================
 
-tfidf_vectorizer = artifacts["tfidf_vectorizer"]
-tfidf_matrix = artifacts["tfidf_matrix"]
-isbn_to_index = artifacts["isbn_to_index"]
-
-knn_model = artifacts["knn_model"]
-user_book_sparse = artifacts["user_book_sparse"]
-user_to_index = artifacts["user_to_index"]
-
-svd_model = artifacts["svd_model"]
-user_factors = artifacts["user_factors"]
-book_factors = artifacts["book_factors"]
-
-train_user_ids = artifacts["train_user_ids"]
-train_isbn_ids = artifacts["train_isbn_ids"]
-
-popularity_rank = artifacts["popularity_rank"]
-
-book_info = artifacts["book_info"]
-train_history = artifacts["train_history"]
-
-hybrid_config = artifacts["hybrid_config"]
-
-
-# ============================================================
-# BOOK INFORMATION VALIDATION
-# ============================================================
-
-required_book_columns = [
-    "ISBN",
-    "Book-Title",
-    "Book-Author",
-    "Publisher",
-    "Image-URL-M"
-]
-
-missing_book_columns = [
-    column
-    for column in required_book_columns
-    if column not in book_info.columns
-]
-
-if missing_book_columns:
-
-    st.error(
-        "book_info.pkl is missing columns: "
-        + ", ".join(missing_book_columns)
-    )
-
-    st.stop()
-
-
-# ============================================================
-# BOOK MAPPINGS
-# ============================================================
-
-title_map = dict(
-    zip(
-        book_info["ISBN"],
-        book_info["Book-Title"]
-    )
-)
-
-author_map = dict(
-    zip(
-        book_info["ISBN"],
-        book_info["Book-Author"]
-    )
-)
-
-publisher_map = dict(
-    zip(
-        book_info["ISBN"],
-        book_info["Publisher"]
-    )
-)
-
-image_map = dict(
-    zip(
-        book_info["ISBN"],
-        book_info["Image-URL-M"]
-    )
-)
-
-
-# ============================================================
-# HELPER FUNCTIONS
-# ============================================================
-
-def clean_image_url(url):
-
-    if pd.isna(url):
-        return ""
-
-    url = str(url).strip()
-
-    if not url:
-        return ""
-
-    if url.startswith("http://"):
-
-        url = url.replace(
-            "http://",
-            "https://",
-            1
-        )
-
-    if not url.startswith(
-        ("http://", "https://")
-    ):
-
-        return ""
-
-    return url
-
-
-def display_value(value, default="Unknown"):
-
-    if pd.isna(value):
-        return default
-
-    value = str(value).strip()
-
-    if not value:
-        return default
-
-    return value
-
-
-# ============================================================
-# POPULARITY RECOMMENDATION
-# ============================================================
-
-def recommend_popularity(
-    user_id,
-    top_n=10
-):
+def recommend_popularity(user_id, top_n=10):
 
     history = set(
         train_history[
@@ -756,14 +302,7 @@ def recommend_popularity(
     return result["ISBN"].tolist()
 
 
-# ============================================================
-# CONTENT-BASED RECOMMENDATION
-# ============================================================
-
-def recommend_content(
-    user_id,
-    top_n=100
-):
+def recommend_content(user_id, top_n=100):
 
     history = set(
         train_history[
@@ -772,8 +311,7 @@ def recommend_content(
     )
 
     history = [
-        isbn
-        for isbn in history
+        isbn for isbn in history
         if isbn in isbn_to_index
     ]
 
@@ -829,7 +367,6 @@ def recommend_content(
                 candidate_isbn not in scores
                 or score > scores[candidate_isbn]
             ):
-
                 scores[candidate_isbn] = score
 
     ranked = sorted(
@@ -844,14 +381,7 @@ def recommend_content(
     ]
 
 
-# ============================================================
-# COLLABORATIVE FILTERING
-# ============================================================
-
-def recommend_collaborative(
-    user_id,
-    top_n=100
-):
+def recommend_collaborative(user_id, top_n=100):
 
     if user_id not in user_to_index:
         return []
@@ -918,14 +448,7 @@ def recommend_collaborative(
     ]
 
 
-# ============================================================
-# SVD RECOMMENDATION
-# ============================================================
-
-def recommend_svd(
-    user_id,
-    top_n=100
-):
+def recommend_svd(user_id, top_n=100):
 
     if user_id not in user_to_index:
         return []
@@ -940,7 +463,9 @@ def recommend_svd(
     )
 
     rated_indices = set(
-        user_book_sparse[user_index].indices
+        user_book_sparse[
+            user_index
+        ].indices
     )
 
     ranked_indices = np.argsort(
@@ -967,14 +492,7 @@ def recommend_svd(
     return recommendations
 
 
-# ============================================================
-# HYBRID RECOMMENDATION
-# ============================================================
-
-def recommend_hybrid(
-    user_id,
-    top_n=10
-):
+def recommend_hybrid(user_id, top_n=10):
 
     content = recommend_content(
         user_id,
@@ -1003,12 +521,9 @@ def recommend_hybrid(
 
     candidates = (
         set(content)
-        |
-        set(collaborative)
-        |
-        set(svd)
-        |
-        set(popularity)
+        | set(collaborative)
+        | set(svd)
+        | set(popularity)
     )
 
     candidates -= history
@@ -1063,14 +578,14 @@ def recommend_hybrid(
         score = (
             content_weight
             * content_scores.get(isbn, 0)
-            +
-            collaborative_weight
+
+            + collaborative_weight
             * collaborative_scores.get(isbn, 0)
-            +
-            svd_weight
+
+            + svd_weight
             * svd_scores.get(isbn, 0)
-            +
-            popularity_weight
+
+            + popularity_weight
             * popularity_scores.get(isbn, 0)
         )
 
@@ -1094,94 +609,34 @@ def recommend_hybrid(
 
 with st.sidebar:
 
-    st.markdown(
-        """
-        <div class="sidebar-brand">
-            <div class="sidebar-logo">📚</div>
-            <div class="sidebar-title">BookWise</div>
-            <div class="sidebar-subtitle">
-                AI Book Recommendation System
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
+    st.markdown("## 📚 BookWise")
+
+    st.caption(
+        "AI Book Recommendation System"
     )
 
     st.divider()
 
-    st.markdown(
-        '<div class="sidebar-heading">Recommendation Models</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("### Recommendation Models")
 
-    st.markdown(
-        '<div class="sidebar-model">📈 Popularity-Based</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="sidebar-model">📖 Content-Based TF-IDF</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="sidebar-model">👥 Collaborative Filtering</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="sidebar-model">🧮 SVD</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="sidebar-model">🤖 Hybrid Recommendation</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="sidebar-heading">Hybrid Weights</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        f"""
-        <div class="sidebar-weight">
-            <span>Content</span>
-            <span class="sidebar-weight-value">
-                {hybrid_config.get("content_weight", 0.30):.0%}
-            </span>
-        </div>
-
-        <div class="sidebar-weight">
-            <span>Collaborative</span>
-            <span class="sidebar-weight-value">
-                {hybrid_config.get("collaborative_weight", 0.30):.0%}
-            </span>
-        </div>
-
-        <div class="sidebar-weight">
-            <span>SVD</span>
-            <span class="sidebar-weight-value">
-                {hybrid_config.get("svd_weight", 0.20):.0%}
-            </span>
-        </div>
-
-        <div class="sidebar-weight">
-            <span>Popularity</span>
-            <span class="sidebar-weight-value">
-                {hybrid_config.get("popularity_weight", 0.20):.0%}
-            </span>
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
+    st.write("📈 Popularity-Based")
+    st.write("📖 Content-Based TF-IDF")
+    st.write("👥 Collaborative Filtering")
+    st.write("🧮 SVD")
+    st.write("🤖 Hybrid Recommendation")
 
     st.divider()
 
-    st.markdown(
-        "### 📊 System",
-    )
+    st.markdown("### Hybrid Weights")
+
+    st.write("Content — **30%**")
+    st.write("Collaborative — **30%**")
+    st.write("SVD — **20%**")
+    st.write("Popularity — **20%**")
+
+    st.divider()
+
+    st.markdown("### 📊 System")
 
     st.metric(
         "Recommendation Models",
@@ -1193,54 +648,40 @@ with st.sidebar:
         "10"
     )
 
-    st.divider()
-
-    st.caption(
-        "Python • Scikit-learn • Streamlit"
-    )
-
 
 # ============================================================
-# HERO
+# HERO SECTION
 # ============================================================
 
 st.markdown(
+    '<div style="font-size:55px;">📚</div>',
+    unsafe_allow_html=True
+)
+
+st.markdown(
     """
-    <div class="hero-box">
-
-        <div class="hero-icon">📚</div>
-
-        <div class="hero-title">
-            Book<span>Wise</span>
-        </div>
-
-        <div class="hero-description">
-            Discover books you'll love using Machine Learning
-            powered recommendations based on reading behavior,
-            content similarity, collaborative patterns and popularity.
-        </div>
-
-        <div class="badge-row">
-
-            <span class="badge">
-                🤖 Machine Learning
-            </span>
-
-            <span class="badge">
-                📖 Content Intelligence
-            </span>
-
-            <span class="badge">
-                👥 Collaborative Filtering
-            </span>
-
-            <span class="badge">
-                ⚡ Hybrid Recommendation
-            </span>
-
-        </div>
-
+    <div class="main-title">
+        Book<span>Wise</span>
     </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <div class="subtitle">
+        AI Book Recommendation System
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown(
+    """
+    <span class="badge">🤖 Machine Learning</span>
+    <span class="badge">📖 Content Intelligence</span>
+    <span class="badge">👥 Collaborative Filtering</span>
+    <span class="badge">⚡ Hybrid Recommendation</span>
     """,
     unsafe_allow_html=True
 )
@@ -1251,44 +692,37 @@ st.markdown(
 # ============================================================
 
 st.markdown(
-    '<div class="search-heading">🔍 Find Your Next Read</div>',
+    '<div class="section-title">🔍 Find Your Next Read</div>',
     unsafe_allow_html=True
 )
 
 st.markdown(
-    '<div class="search-description">'
-    'Enter your User ID and BookWise will generate personalized recommendations.'
-    '</div>',
+    """
+    <div class="section-text">
+        Enter your User ID and BookWise will generate
+        personalized recommendations.
+    </div>
+    """,
     unsafe_allow_html=True
 )
 
-search_col1, search_col2 = st.columns(
-    [3, 1],
-    gap="medium"
+user_id_input = st.text_input(
+    "Enter User ID",
+    placeholder="Example: 276704"
 )
 
-with search_col1:
-
-    user_id_input = st.text_input(
-        "User ID",
-        placeholder="Example: 276704",
-        label_visibility="collapsed"
-    )
-
-with search_col2:
-
-    get_recommendations = st.button(
-        "🚀 Get Recommendations",
-        type="primary",
-        use_container_width=True
-    )
+recommend_button = st.button(
+    "✨ Get Recommendations",
+    type="primary",
+    use_container_width=True
+)
 
 
 # ============================================================
 # RECOMMENDATIONS
 # ============================================================
 
-if get_recommendations:
+if recommend_button:
 
     if not user_id_input.strip():
 
@@ -1296,366 +730,299 @@ if get_recommendations:
             "Please enter a User ID."
         )
 
-        st.stop()
+    else:
 
-    try:
-
-        user_id = int(
-            user_id_input.strip()
-        )
-
-    except ValueError:
-
-        st.error(
-            "User ID must be a numeric value."
-        )
-
-        st.stop()
-
-    if user_id not in user_to_index:
-
-        st.warning(
-            "User ID not found in the trained recommendation system."
-        )
-
-        st.info(
-            "Please enter a User ID that exists in the training data."
-        )
-
-        st.stop()
-
-    with st.spinner(
-        "🔮 Analyzing your reading preferences..."
-    ):
-
-        recommendations = recommend_hybrid(
-            user_id,
-            top_n=10
-        )
-
-    if not recommendations:
-
-        st.warning(
-            "No recommendations are available for this user."
-        )
-
-        st.stop()
-
-    st.markdown(
-        '<div class="section-title">✨ Recommended For You</div>',
-        unsafe_allow_html=True
-    )
-
-    st.markdown(
-        '<div class="section-subtitle">'
-        'Personalized results generated by the Hybrid ML recommendation system'
-        '</div>',
-        unsafe_allow_html=True
-    )
-
-    # ========================================================
-    # 3 COLUMN BOOK GRID
-    # ========================================================
-
-    for row_start in range(
-        0,
-        len(recommendations),
-        3
-    ):
-
-        row_books = recommendations[
-            row_start:row_start + 3
-        ]
-
-        columns = st.columns(
-            3,
-            gap="large"
-        )
-
-        for position, isbn in enumerate(row_books):
-
-            rank = row_start + position + 1
-
-            title = display_value(
-                title_map.get(
-                    isbn,
-                    "Unknown Title"
-                ),
-                "Unknown Title"
+        try:
+            user_id = int(
+                user_id_input.strip()
             )
 
-            author = display_value(
-                author_map.get(
-                    isbn,
-                    "Unknown Author"
-                ),
-                "Unknown Author"
+        except ValueError:
+
+            st.error(
+                "User ID must be a number."
             )
 
-            publisher = display_value(
-                publisher_map.get(
-                    isbn,
-                    "Unknown Publisher"
-                ),
-                "Unknown Publisher"
+            st.stop()
+
+        if user_id not in user_to_index:
+
+            st.warning(
+                "User ID not found or no recommendations "
+                "are available for this user."
             )
 
-            isbn_display = display_value(
-                isbn,
-                "Unknown ISBN"
-            )
+        else:
 
-            image_url = clean_image_url(
-                image_map.get(
-                    isbn,
-                    ""
+            with st.spinner(
+                "Generating personalized recommendations..."
+            ):
+
+                recommendations = recommend_hybrid(
+                    user_id,
+                    top_n=10
                 )
-            )
 
-            with columns[position]:
+            if not recommendations:
 
-                # ------------------------------------------------
-                # CARD
-                # ------------------------------------------------
+                st.warning(
+                    "No recommendations are available "
+                    "for this user."
+                )
 
-                with st.container(border=True):
+            else:
 
-                    st.markdown(
-                        f'<div class="book-rank">#{rank} • HYBRID MATCH</div>',
-                        unsafe_allow_html=True
-                    )
+                st.success(
+                    f"Found {len(recommendations)} "
+                    "personalized recommendations."
+                )
 
-                    # ------------------------------------------------
-                    # BOOK IMAGE
-                    # ------------------------------------------------
+                st.markdown(
+                    "### 📚 Recommended Books"
+                )
 
-                    if image_url:
+                for start in range(
+                    0,
+                    len(recommendations),
+                    3
+                ):
 
-                        try:
+                    row_books = recommendations[
+                        start:start + 3
+                    ]
 
-                            st.image(
-                                image_url,
-                                use_container_width=True
+                    columns = st.columns(3)
+
+                    for offset, isbn in enumerate(
+                        row_books
+                    ):
+
+                        with columns[offset]:
+
+                            rank = start + offset + 1
+
+                            book_rows = book_info[
+                                book_info["ISBN"] == isbn
+                            ]
+
+                            if book_rows.empty:
+                                continue
+
+                            book = book_rows.iloc[0]
+
+                            title = str(
+                                book.get(
+                                    "Book-Title",
+                                    "Unknown Title"
+                                )
                             )
 
-                        except Exception:
+                            author = str(
+                                book.get(
+                                    "Book-Author",
+                                    "Unknown Author"
+                                )
+                            )
+
+                            publisher = str(
+                                book.get(
+                                    "Publisher",
+                                    "Unknown Publisher"
+                                )
+                            )
+
+                            image_url = str(
+                                book.get(
+                                    "Image-URL-M",
+                                    ""
+                                )
+                            ).strip()
 
                             st.markdown(
-                                """
-                                <div class="book-cover">
-                                    <div class="book-placeholder">
-                                        📕
-                                    </div>
-                                </div>
-                                """,
-                                unsafe_allow_html=True
+                                f"**#{rank} • HYBRID MATCH**"
                             )
 
-                    else:
+                            if image_url:
 
-                        st.markdown(
-                            """
-                            <div class="book-cover">
-                                <div class="book-placeholder">
-                                    📕
-                                </div>
-                            </div>
-                            """,
-                            unsafe_allow_html=True
-                        )
+                                try:
 
-                    # ------------------------------------------------
-                    # BOOK INFORMATION
-                    # ------------------------------------------------
+                                    st.image(
+                                        image_url,
+                                        use_container_width=True
+                                    )
 
-                    st.markdown(
-                        f"""
-                        <div class="book-title">
-                            {title}
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                                except Exception:
 
-                    st.markdown(
-                        f"""
-                        <div class="book-detail">
-                            ✍️ <b>Author:</b> {author}
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                                    st.info(
+                                        "📚 Cover image unavailable"
+                                    )
 
-                    st.markdown(
-                        f"""
-                        <div class="book-detail">
-                            🏢 <b>Publisher:</b> {publisher}
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                            else:
 
-                    st.markdown(
-                        f"""
-                        <div class="book-isbn">
-                            ISBN: {isbn_display}
-                        </div>
-                        """,
-                        unsafe_allow_html=True
-                    )
+                                st.info(
+                                    "📚 Cover image unavailable"
+                                )
+
+                            st.markdown(
+                                f"### {title}"
+                            )
+
+                            st.write(
+                                f"**Author:** {author}"
+                            )
+
+                            st.write(
+                                f"**Publisher:** {publisher}"
+                            )
+
+                            st.caption(
+                                f"ISBN: {isbn}"
+                            )
+
+                            st.divider()
 
 
 # ============================================================
-# INFORMATION SECTION
+# HOW BOOKWISE WORKS
 # ============================================================
 
-if not get_recommendations:
+st.markdown(
+    '<div class="section-title">🧠 How BookWise Works</div>',
+    unsafe_allow_html=True
+)
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
 
     st.markdown(
-        '<div class="info-title">🧠 How BookWise Works</div>',
+        """
+        <div class="info-box">
+
+        <div style="font-size:32px;">📖</div>
+
+        <div class="info-title">
+        Content-Based
+        </div>
+
+        <div class="info-text">
+        Uses TF-IDF and cosine similarity
+        to find books with similar content
+        characteristics such as title, author
+        and publisher.
+        </div>
+
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-    info_col1, info_col2, info_col3 = st.columns(
-        3,
-        gap="large"
+with col2:
+
+    st.markdown(
+        """
+        <div class="info-box">
+
+        <div style="font-size:32px;">👥</div>
+
+        <div class="info-title">
+        Collaborative Filtering
+        </div>
+
+        <div class="info-text">
+        Finds users with similar reading
+        behavior and uses their interactions
+        to discover books that may interest
+        the target user.
+        </div>
+
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-    with info_col1:
+with col3:
 
-        st.markdown(
-            """
-            <div class="info-card">
+    st.markdown(
+        """
+        <div class="info-box">
 
-                <div class="info-icon">📖</div>
+        <div style="font-size:32px;">🤖</div>
 
-                <div class="info-card-title">
-                    Content-Based
-                </div>
+        <div class="info-title">
+        Hybrid Intelligence
+        </div>
 
-                <div class="info-card-text">
-                    Uses TF-IDF and cosine similarity
-                    to find books with similar content
-                    characteristics such as title, author
-                    and publisher.
-                </div>
+        <div class="info-text">
+        Combines Content, Collaborative,
+        SVD and Popularity signals into
+        a single recommendation ranking.
+        </div>
 
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with info_col2:
-
-        st.markdown(
-            """
-            <div class="info-card">
-
-                <div class="info-icon">👥</div>
-
-                <div class="info-card-title">
-                    Collaborative Filtering
-                </div>
-
-                <div class="info-card-text">
-                    Finds users with similar reading
-                    behavior and uses their interactions
-                    to discover books that may interest
-                    the target user.
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with info_col3:
-
-        st.markdown(
-            """
-            <div class="info-card">
-
-                <div class="info-icon">🤖</div>
-
-                <div class="info-card-title">
-                    Hybrid Intelligence
-                </div>
-
-                <div class="info-card-text">
-                    Combines Content, Collaborative,
-                    SVD and Popularity signals into
-                    a single recommendation ranking.
-                </div>
-
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # ============================================================
 # TECHNOLOGY STACK
 # ============================================================
 
-if not get_recommendations:
+st.markdown(
+    '<div class="section-title">⚙️ Technology Stack</div>',
+    unsafe_allow_html=True
+)
+
+tech1, tech2, tech3, tech4 = st.columns(4)
+
+with tech1:
 
     st.markdown(
-        '<div class="info-title">⚙️ Technology Stack</div>',
+        """
+        <div class="tech-box">
+        <div style="font-size:32px;">🐍</div>
+        <b>Python</b>
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-    tech1, tech2, tech3, tech4 = st.columns(
-        4,
-        gap="medium"
+with tech2:
+
+    st.markdown(
+        """
+        <div class="tech-box">
+        <div style="font-size:32px;">🧠</div>
+        <b>Scikit-learn</b>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-    with tech1:
+with tech3:
 
-        st.markdown(
-            """
-            <div class="tech-card">
-                <div class="tech-icon">🐍</div>
-                <div class="tech-name">Python</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        """
+        <div class="tech-box">
+        <div style="font-size:32px;">📊</div>
+        <b>Machine Learning</b>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
-    with tech2:
+with tech4:
 
-        st.markdown(
-            """
-            <div class="tech-card">
-                <div class="tech-icon">🧠</div>
-                <div class="tech-name">Scikit-learn</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with tech3:
-
-        st.markdown(
-            """
-            <div class="tech-card">
-                <div class="tech-icon">📊</div>
-                <div class="tech-name">Machine Learning</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
-
-    with tech4:
-
-        st.markdown(
-            """
-            <div class="tech-card">
-                <div class="tech-icon">🚀</div>
-                <div class="tech-name">Streamlit</div>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+    st.markdown(
+        """
+        <div class="tech-box">
+        <div style="font-size:32px;">🚀</div>
+        <b>Streamlit</b>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
 
 # ============================================================
@@ -1666,17 +1033,17 @@ st.markdown(
     """
     <div class="footer">
 
-        📚 <strong>BookWise</strong>
-        — Machine Learning Book Recommendation System
+    📚 <b>BookWise</b> —
+    Machine Learning Book Recommendation System
 
-        <br>
+    <br><br>
 
-        Built with Python • Scikit-learn • Streamlit • Machine Learning
+    Built with Python • Scikit-learn • Streamlit • Machine Learning
 
-        <br>
+    <br><br>
 
-        Hybrid Recommendation • Content Similarity •
-        Collaborative Filtering • SVD
+    Hybrid Recommendation • Content Similarity •
+    Collaborative Filtering • SVD
 
     </div>
     """,
