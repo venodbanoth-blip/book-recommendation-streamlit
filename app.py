@@ -8,11 +8,11 @@ from sklearn.metrics.pairwise import cosine_similarity
 
 
 # ============================================================
-# PAGE CONFIGURATION
+# PAGE CONFIG
 # ============================================================
 
 st.set_page_config(
-    page_title="BookWise | Book Recommendation System",
+    page_title="BookWise",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -20,134 +20,204 @@ st.set_page_config(
 
 
 # ============================================================
-# MODERN THEME
-# CSS ONLY — NO VISIBLE HTML UI
+# PATH
+# ============================================================
+
+BASE_DIR = Path(__file__).resolve().parent
+ARTIFACT_DIR = BASE_DIR / "model_artifacts"
+
+
+# ============================================================
+# MODERN BOOKWISE THEME
+# CSS IS ONLY FOR STYLING
 # ============================================================
 
 st.markdown(
     """
     <style>
 
-    /* Main application */
+    /* ======================================================
+       GLOBAL
+       ====================================================== */
+
     .stApp {
-        background: #f7f1e8;
-        color: #171411;
+        background:
+            radial-gradient(
+                circle at 85% 5%,
+                rgba(184, 134, 80, 0.13),
+                transparent 28%
+            ),
+            radial-gradient(
+                circle at 10% 30%,
+                rgba(111, 72, 45, 0.10),
+                transparent 30%
+            ),
+            #17110e;
+
+        color: #f4eadc;
     }
 
-    /* Main content width */
-    .block-container {
-        max-width: 1250px;
+    .main .block-container {
+        max-width: 1320px;
         padding-top: 2rem;
-        padding-bottom: 3rem;
+        padding-bottom: 4rem;
     }
 
-    /* Sidebar */
+    /* ======================================================
+       SIDEBAR
+       ====================================================== */
+
     [data-testid="stSidebar"] {
-        background: #eadcc9;
-        border-right: 1px solid #d3c0aa;
+        background: #211713;
+        border-right: 1px solid #39271f;
     }
 
     [data-testid="stSidebar"] * {
-        color: #171411 !important;
+        color: #f4eadc !important;
     }
 
-    /* Headings */
-    h1, h2, h3 {
-        color: #171411 !important;
-        letter-spacing: -0.5px;
+    /* ======================================================
+       TEXT
+       ====================================================== */
+
+    h1 {
+        color: #f8efe4 !important;
+        font-weight: 800 !important;
+        letter-spacing: -1.5px !important;
     }
 
-    /* Normal text */
-    p, label, span {
-        color: #171411;
+    h2 {
+        color: #f5e7d6 !important;
+        font-weight: 750 !important;
+        letter-spacing: -0.8px !important;
     }
 
-    /* Buttons */
-    .stButton > button {
-        background: #4b2e20;
-        color: white;
-        border: none;
-        border-radius: 12px;
-        padding: 0.65rem 1.2rem;
-        font-weight: 600;
-        transition: 0.2s;
+    h3 {
+        color: #f1dfcb !important;
+        font-weight: 700 !important;
     }
 
-    .stButton > button:hover {
-        background: #2f1c13;
-        color: white;
-        border: none;
+    p {
+        color: #cdbca9;
     }
 
-    /* Input fields */
+    .stCaption {
+        color: #9e8c7b !important;
+    }
+
+    /* ======================================================
+       INPUT
+       ====================================================== */
+
     .stTextInput input {
-        background: #fffaf3;
-        color: #171411;
-        border: 1px solid #cdb9a2;
-        border-radius: 12px;
+        background: #241914 !important;
+        color: #f8efe4 !important;
+        border: 1px solid #493229 !important;
+        border-radius: 14px !important;
+        height: 48px !important;
     }
 
     .stTextInput input:focus {
-        border-color: #4b2e20;
-        box-shadow: 0 0 0 1px #4b2e20;
+        border: 1px solid #c89a61 !important;
+        box-shadow: 0 0 0 1px #c89a61 !important;
     }
 
-    /* Selectbox */
-    [data-baseweb="select"] > div {
-        background: #fffaf3;
+    /* ======================================================
+       BUTTON
+       ====================================================== */
+
+    .stButton > button {
+        width: 100%;
+        height: 48px;
+        border-radius: 14px;
+        border: 1px solid #c89a61;
+        background: #c89a61;
+        color: #1b120d;
+        font-weight: 750;
+        font-size: 15px;
+        transition: all 0.2s ease;
+    }
+
+    .stButton > button:hover {
+        background: #e0b77d;
+        border-color: #e0b77d;
+        color: #17100c;
+        transform: translateY(-1px);
+    }
+
+    /* ======================================================
+       RADIO
+       ====================================================== */
+
+    [data-testid="stSidebar"] [role="radiogroup"] label {
+        background: transparent;
+        border-radius: 10px;
+        padding: 8px 10px;
+    }
+
+    /* ======================================================
+       CONTAINERS
+       ====================================================== */
+
+    [data-testid="stVerticalBlockBorderWrapper"] {
+        background: rgba(38, 26, 20, 0.86);
+        border: 1px solid #3c2a21 !important;
+        border-radius: 18px !important;
+    }
+
+    /* ======================================================
+       BOOK IMAGES
+       ====================================================== */
+
+    [data-testid="stImage"] img {
         border-radius: 12px;
-        border-color: #cdb9a2;
+        object-fit: cover;
+        box-shadow:
+            0 12px 30px rgba(0, 0, 0, 0.30);
     }
 
-    /* Cards */
-    .book-card {
-        background: #fffaf3;
-        border: 1px solid #dfcfbd;
-        border-radius: 16px;
-        padding: 18px;
-        margin-bottom: 18px;
-        min-height: 430px;
-        box-shadow: 0 5px 18px rgba(75, 46, 32, 0.08);
+    /* ======================================================
+       ALERTS
+       ====================================================== */
+
+    [data-testid="stAlert"] {
+        border-radius: 14px;
     }
 
-    .book-card:hover {
-        box-shadow: 0 8px 24px rgba(75, 46, 32, 0.14);
-    }
+    /* ======================================================
+       DIVIDER
+       ====================================================== */
 
-    /* Divider */
     hr {
-        border-color: #d8c5af;
+        border-color: #38271f !important;
     }
 
-    /* Metrics */
+    /* ======================================================
+       METRICS
+       ====================================================== */
+
     [data-testid="stMetric"] {
-        background: #fffaf3;
-        border: 1px solid #dfcfbd;
+        background: #211713;
+        border: 1px solid #3c2a21;
         border-radius: 14px;
         padding: 14px;
     }
 
     [data-testid="stMetricLabel"] {
-        color: #705747 !important;
+        color: #a99682 !important;
     }
 
     [data-testid="stMetricValue"] {
-        color: #171411 !important;
+        color: #f5e7d6 !important;
     }
 
-    /* Info boxes */
-    [data-testid="stAlert"] {
+    /* ======================================================
+       DATAFRAME
+       ====================================================== */
+
+    [data-testid="stDataFrame"] {
         border-radius: 14px;
-    }
-
-    /* Images */
-    [data-testid="stImage"] img {
-        border-radius: 12px;
-    }
-
-    /* Footer spacing */
-    .footer-space {
-        height: 30px;
+        overflow: hidden;
     }
 
     </style>
@@ -157,15 +227,7 @@ st.markdown(
 
 
 # ============================================================
-# PATHS
-# ============================================================
-
-BASE_DIR = Path(__file__).resolve().parent
-ARTIFACT_DIR = BASE_DIR / "model_artifacts"
-
-
-# ============================================================
-# LOAD ARTIFACTS
+# LOAD MODEL ARTIFACTS
 # ============================================================
 
 @st.cache_resource
@@ -274,7 +336,7 @@ try:
 
 except Exception as e:
 
-    st.error("Unable to load model artifacts.")
+    st.error("Model artifacts could not be loaded.")
 
     st.exception(e)
 
@@ -282,19 +344,13 @@ except Exception as e:
 
 
 # ============================================================
-# DATA CLEANING FOR DISPLAY
+# CLEAN BOOK INFORMATION
 # ============================================================
 
 book_info = book_info.copy()
 
-book_info["ISBN"] = (
-    book_info["ISBN"]
-    .fillna("")
-    .astype(str)
-    .str.strip()
-)
-
 for column in [
+    "ISBN",
     "Book-Title",
     "Book-Author",
     "Publisher",
@@ -523,7 +579,7 @@ def recommend_svd(user_id, top_n=100):
 
 # ============================================================
 # HYBRID MODEL
-# UNCHANGED
+# EXACTLY UNCHANGED
 # ============================================================
 
 def recommend_hybrid(user_id, top_n=10):
@@ -610,24 +666,10 @@ def recommend_hybrid(user_id, top_n=10):
     for isbn in candidates:
 
         score = (
-
-            content_weight
-            * content_scores.get(isbn, 0)
-
-            +
-
-            collaborative_weight
-            * collaborative_scores.get(isbn, 0)
-
-            +
-
-            svd_weight
-            * svd_scores.get(isbn, 0)
-
-            +
-
-            popularity_weight
-            * popularity_scores.get(isbn, 0)
+            content_weight * content_scores.get(isbn, 0)
+            + collaborative_weight * collaborative_scores.get(isbn, 0)
+            + svd_weight * svd_scores.get(isbn, 0)
+            + popularity_weight * popularity_scores.get(isbn, 0)
         )
 
         final_scores[isbn] = score
@@ -645,7 +687,7 @@ def recommend_hybrid(user_id, top_n=10):
 
 
 # ============================================================
-# BOOK INFORMATION
+# BOOK HELPERS
 # ============================================================
 
 def get_book_info(isbn):
@@ -665,13 +707,11 @@ def get_book_image(book):
     if book is None:
         return None
 
-    possible_columns = [
+    for column in [
         "Image-URL-M",
         "Image-URL-L",
         "Image-URL-S"
-    ]
-
-    for column in possible_columns:
+    ]:
 
         if column in book.index:
 
@@ -696,7 +736,7 @@ def get_book_image(book):
 
 with st.sidebar:
 
-    st.markdown("## 📚 BookWise")
+    st.title("📚 BookWise")
 
     st.caption(
         "Personalized book discovery"
@@ -704,238 +744,246 @@ with st.sidebar:
 
     st.divider()
 
-    st.subheader("Navigation")
-
     page = st.radio(
-        "Choose a section",
+        "Explore",
         [
-            "Home",
-            "Get Recommendations",
-            "About Model"
+            "Discover",
+            "Recommendations",
+            "About"
         ],
         label_visibility="collapsed"
     )
 
     st.divider()
 
-    st.subheader("Hybrid Model")
+    st.caption("HYBRID ENGINE")
 
     st.write(
-        "Your recommendations combine four "
-        "different recommendation signals."
+        "Four recommendation signals working together."
     )
 
     st.caption(
-        "Content 30%  •  Collaborative 30%  "
-        "•  SVD 20%  •  Popularity 20%"
+        "Content 30%  ·  Collaborative 30%"
+    )
+
+    st.caption(
+        "SVD 20%  ·  Popularity 20%"
     )
 
     st.divider()
 
     st.caption(
-        "BookWise Recommendation System"
-    )
-
-    st.caption(
-        "Machine Learning • Recommendation • Streamlit"
+        "BookWise ML Recommendation System"
     )
 
 
 # ============================================================
-# HOME PAGE
+# DISCOVER PAGE
 # ============================================================
 
-if page == "Home":
+if page == "Discover":
+
+    # --------------------------------------------------------
+    # HERO
+    # --------------------------------------------------------
 
     st.title("📚 BookWise")
 
     st.subheader(
-        "Discover your next great book."
+        "Find a story worth getting lost in."
     )
 
     st.write(
-        "A personalized book recommendation system "
-        "that combines content similarity, collaborative "
-        "filtering, SVD, and popularity signals."
+        "Personalized recommendations built from your "
+        "reading behavior, similar readers, book content, "
+        "and popularity patterns."
     )
 
+    st.write("")
+
+    hero_left, hero_right = st.columns(
+        [3, 2],
+        gap="large"
+    )
+
+    with hero_left:
+
+        with st.container(border=True):
+
+            st.caption("PERSONALIZED DISCOVERY")
+
+            st.header(
+                "Your next favorite book is waiting."
+            )
+
+            st.write(
+                "BookWise combines Content-Based filtering, "
+                "Collaborative Filtering, SVD and Popularity "
+                "into one Hybrid recommendation engine."
+            )
+
+            st.write("")
+
+            st.button(
+                "Go to Recommendations →",
+                key="discover_button",
+                use_container_width=True
+            )
+
+    with hero_right:
+
+        with st.container(border=True):
+
+            st.caption("HYBRID MODEL")
+
+            st.metric(
+                "Recommendation Engine",
+                "Hybrid"
+            )
+
+            st.write(
+                "30% Content · 30% Collaborative · "
+                "20% SVD · 20% Popularity"
+            )
+
+    st.write("")
     st.divider()
 
     # --------------------------------------------------------
-    # HERO METRICS
+    # FEATURES
     # --------------------------------------------------------
 
-    col1, col2, col3, col4 = st.columns(4)
+    st.header("One system. Four signals.")
+
+    col1, col2 = st.columns(2, gap="large")
 
     with col1:
-        st.metric(
-            "Recommendation Model",
-            "Hybrid"
-        )
+
+        with st.container(border=True):
+
+            st.subheader("📖 Content-Based")
+
+            st.write(
+                "Understands book similarity through "
+                "TF-IDF representations and cosine similarity."
+            )
+
+            st.caption("30% of Hybrid ranking")
+
+        st.write("")
+
+        with st.container(border=True):
+
+            st.subheader("🧠 SVD")
+
+            st.write(
+                "Learns hidden patterns from user-book "
+                "interactions using latent factors."
+            )
+
+            st.caption("20% of Hybrid ranking")
 
     with col2:
-        st.metric(
-            "Recommendation Size",
-            "Top 10"
-        )
 
-    with col3:
-        st.metric(
-            "Content Weight",
-            "30%"
-        )
+        with st.container(border=True):
 
-    with col4:
-        st.metric(
-            "Collaborative Weight",
-            "30%"
-        )
+            st.subheader("👥 Collaborative")
 
+            st.write(
+                "Finds users with similar reading behavior "
+                "and uses their preferences."
+            )
+
+            st.caption("30% of Hybrid ranking")
+
+        st.write("")
+
+        with st.container(border=True):
+
+            st.subheader("🔥 Popularity")
+
+            st.write(
+                "Adds popular books to improve candidate "
+                "coverage and discovery."
+            )
+
+            st.caption("20% of Hybrid ranking")
+
+    st.write("")
     st.divider()
 
-    st.header("How BookWise works")
+    # --------------------------------------------------------
+    # SAMPLE USER
+    # --------------------------------------------------------
 
-    c1, c2 = st.columns(2)
-
-    with c1:
-
-        with st.container(border=True):
-
-            st.subheader(
-                "📖 Content-Based"
-            )
-
-            st.write(
-                "Finds books that are similar to "
-                "books the user has interacted with "
-                "using TF-IDF and cosine similarity."
-            )
-
-            st.caption(
-                "Hybrid contribution: 30%"
-            )
-
-    with c2:
-
-        with st.container(border=True):
-
-            st.subheader(
-                "👥 Collaborative"
-            )
-
-            st.write(
-                "Uses similar users and their reading "
-                "history to identify books that may "
-                "interest the current user."
-            )
-
-            st.caption(
-                "Hybrid contribution: 30%"
-            )
-
-    c3, c4 = st.columns(2)
-
-    with c3:
-
-        with st.container(border=True):
-
-            st.subheader(
-                "🧠 SVD"
-            )
-
-            st.write(
-                "Uses latent factors learned from "
-                "the user-book interaction matrix "
-                "to estimate book preferences."
-            )
-
-            st.caption(
-                "Hybrid contribution: 20%"
-            )
-
-    with c4:
-
-        with st.container(border=True):
-
-            st.subheader(
-                "🔥 Popularity"
-            )
-
-            st.write(
-                "Adds highly rated and popular books "
-                "as another signal in the final "
-                "recommendation."
-            )
-
-            st.caption(
-                "Hybrid contribution: 20%"
-            )
-
-    st.divider()
-
-    st.header("Start discovering")
+    st.header("Ready to discover?")
 
     st.write(
-        "Enter a valid User ID in the "
-        "**Get Recommendations** section."
+        "Use a trained User ID to generate a personalized "
+        "Top 10 recommendation list."
     )
 
     if 276704 in user_to_index:
 
         st.info(
-            "Try User ID 276704 — this user is "
-            "available in the trained recommendation model."
+            "Demo User ID available: 276704"
         )
 
 
 # ============================================================
-# RECOMMENDATION PAGE
+# RECOMMENDATIONS PAGE
 # ============================================================
 
-elif page == "Get Recommendations":
+elif page == "Recommendations":
 
-    st.title("📚 Personalized Recommendations")
+    st.title("Your Recommendations")
 
     st.write(
-        "Enter your User ID to generate personalized "
-        "book recommendations using the Hybrid model."
+        "Tell us who you are, and BookWise will build "
+        "a personalized reading list."
     )
 
-    st.divider()
+    st.write("")
 
     # --------------------------------------------------------
-    # USER INPUT
+    # SEARCH AREA
     # --------------------------------------------------------
 
-    input_col, button_col = st.columns(
-        [4, 1]
-    )
+    with st.container(border=True):
 
-    with input_col:
+        st.caption("PERSONALIZED SEARCH")
 
-        user_id_text = st.text_input(
-            "User ID",
-            value="276704",
-            placeholder="Example: 276704",
-            help="Enter a User ID available in the trained model."
+        input_col, button_col = st.columns(
+            [4, 1],
+            gap="medium"
         )
 
-    with button_col:
+        with input_col:
 
-        st.write("")
+            user_id_text = st.text_input(
+                "User ID",
+                value="276704",
+                placeholder="Enter your User ID",
+                label_visibility="visible"
+            )
 
-        get_recommendations = st.button(
-            "✨ Recommend",
-            use_container_width=True
-        )
+        with button_col:
 
-    if get_recommendations:
+            st.write("")
 
-        # ----------------------------------------------------
-        # VALIDATE USER ID
-        # ----------------------------------------------------
+            generate = st.button(
+                "Recommend ✨",
+                use_container_width=True
+            )
+
+    # --------------------------------------------------------
+    # GENERATE
+    # --------------------------------------------------------
+
+    if generate:
 
         try:
+
             user_id = int(
                 user_id_text.strip()
             )
@@ -943,7 +991,7 @@ elif page == "Get Recommendations":
         except ValueError:
 
             st.error(
-                "Please enter a valid numeric User ID."
+                "Please enter a numeric User ID."
             )
 
             st.stop()
@@ -951,21 +999,18 @@ elif page == "Get Recommendations":
         if user_id not in user_to_index:
 
             st.warning(
-                "User ID not found in the trained recommendation model."
+                "This User ID is not available in "
+                "the trained recommendation model."
             )
 
             st.info(
-                "Try User ID 276704."
+                "Try the demo User ID: 276704"
             )
 
             st.stop()
 
-        # ----------------------------------------------------
-        # GENERATE RECOMMENDATIONS
-        # ----------------------------------------------------
-
         with st.spinner(
-            "Finding books personalized for you..."
+            "Curating your personal bookshelf..."
         ):
 
             recommendations = recommend_hybrid(
@@ -983,70 +1028,86 @@ elif page == "Get Recommendations":
             st.stop()
 
         # ----------------------------------------------------
-        # SUCCESS HEADER
+        # RESULT INTRO
         # ----------------------------------------------------
 
-        st.success(
-            f"Found {len(recommendations)} "
-            f"personalized recommendations for User {user_id}."
+        st.write("")
+
+        result_col1, result_col2 = st.columns(
+            [3, 1]
         )
 
-        st.subheader(
-            "✨ Recommended for You"
-        )
+        with result_col1:
 
-        st.caption(
-            "Powered by the Hybrid recommendation model"
-        )
+            st.header(
+                "Picked for you"
+            )
 
-        st.divider()
+            st.caption(
+                f"Personalized reading list for User {user_id}"
+            )
+
+        with result_col2:
+
+            st.metric(
+                "Books Found",
+                len(recommendations)
+            )
+
+        st.write("")
 
         # ----------------------------------------------------
-        # HYBRID MODEL INFORMATION
+        # HYBRID EXPLANATION
         # ----------------------------------------------------
 
         with st.container(border=True):
 
-            st.markdown(
-                "### 🧠 Hybrid Recommendation Engine"
+            st.caption(
+                "POWERED BY HYBRID RECOMMENDATION"
             )
 
-            st.write(
-                "The final ranking combines four recommendation "
-                "signals without changing the trained model."
+            st.subheader(
+                "Four signals. One personalized ranking."
             )
 
             w1, w2, w3, w4 = st.columns(4)
 
             with w1:
-                st.metric(
-                    "Content",
-                    "30%"
-                )
+
+                st.write("📖 Content")
+                st.write("**30%**")
 
             with w2:
-                st.metric(
-                    "Collaborative",
-                    "30%"
-                )
+
+                st.write("👥 Collaborative")
+                st.write("**30%**")
 
             with w3:
-                st.metric(
-                    "SVD",
-                    "20%"
-                )
+
+                st.write("🧠 SVD")
+                st.write("**20%**")
 
             with w4:
-                st.metric(
-                    "Popularity",
-                    "20%"
-                )
+
+                st.write("🔥 Popularity")
+                st.write("**20%**")
 
         st.write("")
+        st.divider()
 
         # ----------------------------------------------------
-        # BOOK GRID
+        # BOOKS
         # ----------------------------------------------------
+
+        st.header(
+            "Your personal bookshelf"
+        )
+
+        st.caption(
+            "Top 10 recommendations generated by the Hybrid model"
+        )
+
+        st.write("")
 
         for row_start in range(
             0,
@@ -1059,17 +1120,17 @@ elif page == "Get Recommendations":
             ]
 
             columns = st.columns(
-                len(row_books)
+                len(row_books),
+                gap="medium"
             )
 
-            for position, isbn in enumerate(
-                row_books,
-                start=row_start + 1
+            for index, isbn in enumerate(
+                row_books
             ):
 
-                with columns[
-                    position - row_start - 1
-                ]:
+                position = row_start + index + 1
+
+                with columns[index]:
 
                     book = get_book_info(
                         isbn
@@ -1096,15 +1157,19 @@ elif page == "Get Recommendations":
 
                                 except Exception:
 
-                                    st.info(
+                                    st.write(
                                         "📖 Cover unavailable"
                                     )
 
                             else:
 
-                                st.info(
+                                st.write(
                                     "📖 Cover unavailable"
                                 )
+
+                            st.caption(
+                                f"#{position}"
+                            )
 
                             title = str(
                                 book.get(
@@ -1127,162 +1192,161 @@ elif page == "Get Recommendations":
                                 )
                             ).strip()
 
-                            st.caption(
-                                f"Recommendation #{position}"
-                            )
+                            if not title:
+                                title = "Unknown Title"
+
+                            if not author:
+                                author = "Unknown Author"
 
                             st.subheader(
-                                title[:80]
+                                title[:70]
                             )
 
                             st.write(
-                                f"**Author:** {author[:55]}"
+                                f"**{author[:45]}**"
                             )
 
                             if publisher:
 
                                 st.caption(
-                                    f"Publisher: {publisher[:55]}"
+                                    publisher[:45]
                                 )
 
                             st.caption(
-                                f"ISBN: {isbn}"
+                                f"ISBN {isbn}"
                             )
 
                         else:
 
+                            st.caption(
+                                f"#{position}"
+                            )
+
                             st.subheader(
-                                f"Book #{position}"
+                                "Book information unavailable"
                             )
 
                             st.caption(
-                                f"ISBN: {isbn}"
+                                f"ISBN {isbn}"
                             )
 
+        st.write("")
         st.divider()
 
         st.caption(
-            "Recommendations are generated from the trained "
-            "Hybrid model using your existing model artifacts."
+            "BookWise recommendations are generated from "
+            "the trained Hybrid recommendation system."
         )
 
 
 # ============================================================
-# ABOUT MODEL PAGE
+# ABOUT PAGE
 # ============================================================
 
-elif page == "About Model":
+elif page == "About":
 
-    st.title("🧠 About the Recommendation System")
+    st.title("About BookWise")
 
     st.write(
-        "BookWise uses multiple machine-learning recommendation "
-        "approaches and combines their ranked results into one "
-        "Hybrid recommendation."
+        "BookWise is a machine-learning recommendation "
+        "system designed to combine multiple recommendation "
+        "strategies into one personalized experience."
     )
 
+    st.write("")
     st.divider()
 
-    st.header("Hybrid Model Configuration")
+    st.header("The Hybrid Engine")
 
-    config_col1, config_col2 = st.columns(2)
+    st.write(
+        "The deployed recommendation engine combines "
+        "four ranked candidate lists."
+    )
 
-    with config_col1:
+    st.write("")
 
-        st.metric(
-            "Content-Based",
-            "30%"
-        )
+    col1, col2 = st.columns(2, gap="large")
 
-        st.write(
-            "TF-IDF + cosine similarity"
-        )
+    with col1:
 
-        st.metric(
-            "Collaborative Filtering",
-            "30%"
-        )
+        with st.container(border=True):
 
-        st.write(
-            "KNN-based user similarity"
-        )
+            st.subheader("📖 Content-Based")
 
-    with config_col2:
+            st.write(
+                "TF-IDF representations are used to measure "
+                "similarity between books."
+            )
 
-        st.metric(
-            "SVD",
-            "20%"
-        )
+            st.caption(
+                "Weight: 30%"
+            )
 
-        st.write(
-            "Latent-factor recommendation"
-        )
+        st.write("")
 
-        st.metric(
-            "Popularity",
-            "20%"
-        )
+        with st.container(border=True):
 
-        st.write(
-            "Popularity-based ranking"
-        )
+            st.subheader("👥 Collaborative")
 
+            st.write(
+                "KNN identifies similar users from their "
+                "book interaction patterns."
+            )
+
+            st.caption(
+                "Weight: 30%"
+            )
+
+    with col2:
+
+        with st.container(border=True):
+
+            st.subheader("🧠 SVD")
+
+            st.write(
+                "Latent factors capture hidden relationships "
+                "between users and books."
+            )
+
+            st.caption(
+                "Weight: 20%"
+            )
+
+        st.write("")
+
+        with st.container(border=True):
+
+            st.subheader("🔥 Popularity")
+
+            st.write(
+                "Popularity ranking provides an additional "
+                "candidate signal."
+            )
+
+            st.caption(
+                "Weight: 20%"
+            )
+
+    st.write("")
     st.divider()
 
-    st.header("Recommendation Flow")
+    st.header("Final Hybrid Weights")
 
-    st.write(
-        "1. Identify the user's previous book interactions."
-    )
-
-    st.write(
-        "2. Generate candidate books using Content-Based filtering."
-    )
-
-    st.write(
-        "3. Generate candidate books using Collaborative filtering."
-    )
-
-    st.write(
-        "4. Generate candidate books using SVD."
-    )
-
-    st.write(
-        "5. Add popular books as additional candidates."
-    )
-
-    st.write(
-        "6. Combine the four ranking signals using the "
-        "configured Hybrid weights."
-    )
-
-    st.write(
-        "7. Remove books already present in the user's history."
-    )
-
-    st.write(
-        "8. Return the final Top 10 recommendations."
-    )
-
-    st.divider()
-
-    st.header("Model Architecture")
-
-    architecture = pd.DataFrame(
+    model_table = pd.DataFrame(
         {
-            "Component": [
+            "Recommendation Method": [
                 "Content-Based",
                 "Collaborative",
                 "SVD",
                 "Popularity"
             ],
-            "Method": [
+            "Technique": [
                 "TF-IDF + Cosine Similarity",
                 "KNN User Similarity",
-                "Truncated SVD",
+                "Latent Factor Model",
                 "Popularity Ranking"
             ],
-            "Hybrid Weight": [
+            "Weight": [
                 "30%",
                 "30%",
                 "20%",
@@ -1292,16 +1356,18 @@ elif page == "About Model":
     )
 
     st.dataframe(
-        architecture,
+        model_table,
         use_container_width=True,
         hide_index=True
     )
 
+    st.write("")
     st.divider()
 
     st.info(
-        "The recommendation model and its weights are loaded "
-        "from the existing model_artifacts folder."
+        "The deployed application loads the existing trained "
+        "model artifacts. The recommendation logic and Hybrid "
+        "weights are not modified by this interface."
     )
 
 
@@ -1309,12 +1375,25 @@ elif page == "About Model":
 # FOOTER
 # ============================================================
 
+st.write("")
 st.divider()
 
-st.caption(
-    "📚 BookWise • Machine Learning Book Recommendation System"
+footer_left, footer_right = st.columns(
+    [3, 1]
 )
 
-st.caption(
-    "Hybrid Recommendation • Personalized Discovery • Streamlit"
-)
+with footer_left:
+
+    st.caption(
+        "📚 BOOKWISE"
+    )
+
+    st.caption(
+        "Personalized book discovery powered by machine learning."
+    )
+
+with footer_right:
+
+    st.caption(
+        "Hybrid Recommendation System"
+    )
