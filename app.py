@@ -1,5 +1,6 @@
 import os
 import json
+import html
 import joblib
 import numpy as np
 import pandas as pd
@@ -13,7 +14,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 # ============================================================
 
 st.set_page_config(
-    page_title="BookWise | Recommendation System",
+    page_title="BookWise | AI Book Recommendation System",
     page_icon="📚",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -28,106 +29,342 @@ st.markdown(
     """
     <style>
 
-    /* ---------- Main Background ---------- */
+    /* ========================================================
+       GLOBAL
+       ======================================================== */
 
     .stApp {
         background:
             linear-gradient(
-                rgba(15, 23, 42, 0.93),
-                rgba(30, 41, 59, 0.96)
+                rgba(8, 15, 30, 0.94),
+                rgba(15, 23, 42, 0.97)
             ),
-            url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2000&q=80");
+            url("https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=2200&q=85");
 
         background-size: cover;
         background-position: center;
         background-attachment: fixed;
     }
 
-
-    /* ---------- Main Content ---------- */
-
     .block-container {
-        max-width: 1200px;
+        max-width: 1250px;
         padding-top: 2rem;
-        padding-bottom: 3rem;
+        padding-bottom: 4rem;
     }
 
 
-    /* ---------- Header ---------- */
+    /* ========================================================
+       SIDEBAR
+       ======================================================== */
+
+    [data-testid="stSidebar"] {
+        background:
+            linear-gradient(
+                180deg,
+                #080f1e 0%,
+                #111827 50%,
+                #172033 100%
+            );
+
+        border-right: 1px solid rgba(255,255,255,0.08);
+    }
+
+    [data-testid="stSidebar"] * {
+        color: #e5e7eb;
+    }
+
+    .sidebar-brand {
+        text-align: center;
+        padding: 15px 5px 22px 5px;
+    }
+
+    .sidebar-logo {
+        font-size: 46px;
+        margin-bottom: 5px;
+    }
+
+    .sidebar-title {
+        font-size: 25px;
+        font-weight: 800;
+        color: white;
+        letter-spacing: -0.5px;
+    }
+
+    .sidebar-subtitle {
+        color: #94a3b8;
+        font-size: 12px;
+        margin-top: 5px;
+    }
+
+    .sidebar-section {
+        color: #94a3b8;
+        font-size: 11px;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        margin-top: 22px;
+        margin-bottom: 12px;
+    }
+
+    .model-item {
+        background: rgba(255,255,255,0.045);
+        border: 1px solid rgba(255,255,255,0.06);
+        border-radius: 10px;
+        padding: 9px 12px;
+        margin-bottom: 7px;
+        font-size: 13px;
+    }
+
+    .weight-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 2px;
+        color: #cbd5e1;
+        font-size: 13px;
+    }
+
+    .weight-value {
+        color: white;
+        font-weight: 700;
+    }
+
+
+    /* ========================================================
+       HERO
+       ======================================================== */
 
     .hero {
-        padding: 42px 35px;
-        border-radius: 24px;
-        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+
+        padding: 58px 35px 52px 35px;
+
+        border-radius: 28px;
+
+        margin-bottom: 25px;
 
         background:
             linear-gradient(
                 135deg,
-                rgba(30, 41, 59, 0.96),
-                rgba(51, 65, 85, 0.92)
+                rgba(15, 23, 42, 0.97),
+                rgba(30, 41, 59, 0.93)
             );
 
-        border: 1px solid rgba(255,255,255,0.12);
+        border: 1px solid rgba(255,255,255,0.10);
 
         box-shadow:
-            0 20px 50px rgba(0,0,0,0.35);
+            0 25px 70px rgba(0,0,0,0.35);
 
         text-align: center;
     }
 
+    .hero::before {
+        content: "📖";
+        position: absolute;
+        font-size: 130px;
+        opacity: 0.035;
+        right: 40px;
+        top: -20px;
+        transform: rotate(-12deg);
+    }
+
+    .hero::after {
+        content: "📚";
+        position: absolute;
+        font-size: 110px;
+        opacity: 0.035;
+        left: 35px;
+        bottom: -25px;
+        transform: rotate(10deg);
+    }
+
+    .hero-icon {
+        font-size: 48px;
+        margin-bottom: 8px;
+    }
+
     .hero h1 {
         color: white;
-        font-size: 44px;
-        margin-bottom: 10px;
-        font-weight: 800;
-        letter-spacing: -1px;
+        font-size: 52px;
+        line-height: 1.1;
+        margin: 0;
+        font-weight: 850;
+        letter-spacing: -2px;
+    }
+
+    .hero-highlight {
+        background: linear-gradient(
+            90deg,
+            #f8fafc,
+            #cbd5e1
+        );
+
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
 
     .hero p {
         color: #cbd5e1;
-        font-size: 18px;
-        margin-bottom: 0;
+        font-size: 17px;
+        margin: 15px auto 0 auto;
+        max-width: 680px;
+        line-height: 1.7;
+    }
+
+    .hero-badges {
+        margin-top: 22px;
+    }
+
+    .hero-badge {
+        display: inline-block;
+        padding: 7px 13px;
+        margin: 4px;
+        border-radius: 20px;
+
+        background: rgba(255,255,255,0.07);
+        border: 1px solid rgba(255,255,255,0.09);
+
+        color: #cbd5e1;
+        font-size: 12px;
+        font-weight: 600;
     }
 
 
-    /* ---------- Search Card ---------- */
+    /* ========================================================
+       SEARCH PANEL
+       ======================================================== */
 
-    .search-card {
-        background: rgba(255,255,255,0.96);
-        padding: 25px;
-        border-radius: 20px;
-        margin-bottom: 30px;
+    .search-panel {
+        background: rgba(255,255,255,0.97);
+        border-radius: 22px;
+        padding: 25px 28px 20px 28px;
 
         box-shadow:
-            0 12px 35px rgba(0,0,0,0.20);
+            0 18px 45px rgba(0,0,0,0.20);
+
+        border: 1px solid rgba(255,255,255,0.55);
+
+        margin-bottom: 32px;
+    }
+
+    .search-title {
+        color: #0f172a;
+        font-size: 22px;
+        font-weight: 800;
+        margin-bottom: 3px;
+    }
+
+    .search-description {
+        color: #64748b;
+        font-size: 14px;
+        margin-bottom: 15px;
+    }
+
+    div[data-baseweb="input"] {
+        border-radius: 12px;
+    }
+
+    div[data-baseweb="input"] input {
+        color: #0f172a !important;
+        font-weight: 600;
+    }
+
+    .stButton > button {
+        width: 100%;
+        min-height: 46px;
+
+        border-radius: 12px;
+
+        font-size: 15px;
+        font-weight: 750;
+
+        border: 0;
+
+        background: #0f172a;
+        color: white;
+
+        box-shadow:
+            0 7px 18px rgba(15,23,42,0.22);
+
+        transition: all 0.2s ease;
+    }
+
+    .stButton > button:hover {
+        background: #1e293b;
+        color: white;
+        transform: translateY(-2px);
+
+        box-shadow:
+            0 10px 25px rgba(15,23,42,0.30);
     }
 
 
-    /* ---------- Recommendation Card ---------- */
+    /* ========================================================
+       SECTION HEADER
+       ======================================================== */
+
+    .section-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin: 10px 0 18px 0;
+    }
+
+    .section-title {
+        color: white;
+        font-size: 29px;
+        font-weight: 850;
+        letter-spacing: -0.6px;
+    }
+
+    .section-subtitle {
+        color: #94a3b8;
+        font-size: 13px;
+        margin-top: 3px;
+    }
+
+
+    /* ========================================================
+       RECOMMENDATION CARD
+       ======================================================== */
 
     .book-card {
-        background: rgba(255,255,255,0.97);
-        border-radius: 18px;
-        padding: 18px;
+        background: rgba(255,255,255,0.98);
+
+        border-radius: 20px;
+
+        padding: 14px;
+
         margin-bottom: 18px;
 
-        border: 1px solid rgba(255,255,255,0.5);
+        border: 1px solid rgba(255,255,255,0.70);
 
         box-shadow:
-            0 10px 28px rgba(0,0,0,0.18);
+            0 12px 32px rgba(0,0,0,0.18);
 
-        transition: all 0.25s ease;
+        min-height: 455px;
+
+        transition:
+            transform 0.22s ease,
+            box-shadow 0.22s ease;
     }
 
     .book-card:hover {
-        transform: translateY(-4px);
+        transform: translateY(-6px);
 
         box-shadow:
-            0 16px 38px rgba(0,0,0,0.28);
+            0 20px 45px rgba(0,0,0,0.28);
     }
 
+    .rank-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
 
-    /* ---------- Book Text ---------- */
+        margin-bottom: 10px;
+    }
 
     .rank {
         display: inline-block;
@@ -135,132 +372,247 @@ st.markdown(
         background: #0f172a;
         color: white;
 
-        padding: 5px 12px;
+        padding: 5px 10px;
+
         border-radius: 20px;
 
-        font-size: 13px;
+        font-size: 11px;
+        font-weight: 800;
+    }
+
+    .ml-badge {
+        color: #64748b;
+        font-size: 10px;
         font-weight: 700;
 
-        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+    }
+
+    .book-image-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        width: 100%;
+        height: 245px;
+
+        background:
+            linear-gradient(
+                145deg,
+                #f1f5f9,
+                #e2e8f0
+            );
+
+        border-radius: 15px;
+
+        overflow: hidden;
+
+        margin-bottom: 15px;
+    }
+
+    .book-image-container img {
+        max-width: 155px;
+        max-height: 225px;
+
+        width: auto;
+        height: auto;
+
+        object-fit: contain;
+
+        border-radius: 7px;
+
+        box-shadow:
+            0 9px 22px rgba(0,0,0,0.18);
+    }
+
+    .book-placeholder {
+        width: 125px;
+        height: 190px;
+
+        border-radius: 9px;
+
+        background: #cbd5e1;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 48px;
+
+        box-shadow:
+            0 9px 20px rgba(0,0,0,0.10);
     }
 
     .book-title {
         color: #0f172a;
-        font-size: 21px;
-        font-weight: 750;
+
+        font-size: 17px;
+        font-weight: 800;
+
+        line-height: 1.35;
+
+        height: 47px;
+
+        overflow: hidden;
+
         margin-bottom: 8px;
     }
 
     .book-author {
         color: #475569;
-        font-size: 15px;
+
+        font-size: 12px;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
         margin-bottom: 5px;
     }
 
     .book-publisher {
         color: #64748b;
-        font-size: 14px;
-        margin-bottom: 5px;
+
+        font-size: 11px;
+
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        margin-bottom: 7px;
     }
 
     .book-isbn {
-        color: #64748b;
-        font-size: 13px;
+        color: #94a3b8;
+
+        font-size: 10px;
+
         font-family: monospace;
     }
 
 
-    /* ---------- Section Header ---------- */
+    /* ========================================================
+       INFORMATION CARDS
+       ======================================================== */
 
-    .section-title {
+    .info-title {
         color: white;
-        font-size: 28px;
-        font-weight: 800;
-        margin-top: 15px;
-        margin-bottom: 20px;
+
+        font-size: 27px;
+        font-weight: 850;
+
+        margin-top: 42px;
+        margin-bottom: 18px;
     }
 
-
-    /* ---------- Info Cards ---------- */
-
     .info-card {
-        background: rgba(255,255,255,0.95);
+        background: rgba(255,255,255,0.96);
+
         border-radius: 18px;
+
         padding: 22px;
-        height: 100%;
+
+        min-height: 205px;
+
+        border: 1px solid rgba(255,255,255,0.60);
 
         box-shadow:
-            0 10px 25px rgba(0,0,0,0.16);
+            0 12px 30px rgba(0,0,0,0.16);
+    }
+
+    .info-icon {
+        font-size: 30px;
+        margin-bottom: 10px;
     }
 
     .info-card h3 {
         color: #0f172a;
-        margin-bottom: 10px;
+
+        font-size: 18px;
+
+        margin: 0 0 8px 0;
     }
 
     .info-card p {
-        color: #475569;
-        line-height: 1.6;
+        color: #64748b;
+
+        font-size: 13px;
+
+        line-height: 1.65;
+
+        margin: 0;
     }
 
 
-    /* ---------- Sidebar ---------- */
+    /* ========================================================
+       STATS
+       ======================================================== */
 
-    [data-testid="stSidebar"] {
-        background:
-            linear-gradient(
-                180deg,
-                #0f172a,
-                #1e293b
-            );
+    .stat-card {
+        background: rgba(255,255,255,0.055);
+
+        border: 1px solid rgba(255,255,255,0.09);
+
+        border-radius: 16px;
+
+        padding: 18px;
+
+        text-align: center;
+
+        margin-top: 25px;
     }
 
-    [data-testid="stSidebar"] * {
-        color: #e2e8f0;
-    }
-
-
-    /* ---------- Button ---------- */
-
-    .stButton > button {
-        width: 100%;
-        border-radius: 12px;
-        height: 48px;
-
-        font-size: 16px;
-        font-weight: 700;
-
-        border: none;
-
-        background: #0f172a;
+    .stat-number {
         color: white;
 
-        transition: all 0.2s ease;
+        font-size: 24px;
+
+        font-weight: 850;
     }
 
-    .stButton > button:hover {
-        background: #334155;
-        color: white;
-        transform: translateY(-1px);
+    .stat-label {
+        color: #94a3b8;
+
+        font-size: 11px;
+
+        margin-top: 3px;
     }
 
 
-    /* ---------- Input ---------- */
+    /* ========================================================
+       ALERTS
+       ======================================================== */
 
-    div[data-baseweb="input"] {
+    .stAlert {
         border-radius: 12px;
     }
 
 
-    /* ---------- Footer ---------- */
+    /* ========================================================
+       FOOTER
+       ======================================================== */
 
     .footer {
         text-align: center;
-        color: #cbd5e1;
-        margin-top: 45px;
-        padding-top: 25px;
 
-        border-top: 1px solid rgba(255,255,255,0.15);
+        color: #94a3b8;
+
+        margin-top: 55px;
+
+        padding-top: 25px;
+        padding-bottom: 10px;
+
+        border-top:
+            1px solid rgba(255,255,255,0.10);
+
+        font-size: 12px;
+
+        line-height: 1.8;
+    }
+
+    .footer strong {
+        color: #e2e8f0;
     }
 
     </style>
@@ -308,11 +660,15 @@ def load_artifacts():
         file_name
         for file_name in required_files
         if not os.path.exists(
-            os.path.join(ARTIFACT_DIR, file_name)
+            os.path.join(
+                ARTIFACT_DIR,
+                file_name
+            )
         )
     ]
 
     if missing_files:
+
         raise FileNotFoundError(
             "Missing model artifact files: "
             + ", ".join(missing_files)
@@ -442,7 +798,9 @@ try:
 
 except Exception as error:
 
-    st.error("❌ Unable to load the recommendation system.")
+    st.error(
+        "❌ Unable to load the recommendation system."
+    )
 
     st.code(str(error))
 
@@ -477,7 +835,7 @@ hybrid_config = artifacts["hybrid_config"]
 
 
 # ============================================================
-# BOOK INFORMATION
+# BOOK INFORMATION VALIDATION
 # ============================================================
 
 required_book_columns = [
@@ -538,7 +896,7 @@ image_map = dict(
 
 
 # ============================================================
-# HELPER FUNCTION
+# HELPER FUNCTIONS
 # ============================================================
 
 def clean_image_url(url):
@@ -552,6 +910,7 @@ def clean_image_url(url):
         return ""
 
     if url.startswith("http://"):
+
         url = url.replace(
             "http://",
             "https://",
@@ -561,9 +920,23 @@ def clean_image_url(url):
     if not url.startswith(
         ("http://", "https://")
     ):
+
         return ""
 
     return url
+
+
+def safe_text(value, default="Unknown"):
+
+    if pd.isna(value):
+        return default
+
+    value = str(value).strip()
+
+    if not value:
+        return default
+
+    return html.escape(value)
 
 
 # ============================================================
@@ -661,6 +1034,7 @@ def recommend_content(
                 candidate_isbn not in scores
                 or score > scores[candidate_isbn]
             ):
+
                 scores[candidate_isbn] = score
 
     ranked = sorted(
@@ -927,45 +1301,100 @@ with st.sidebar:
 
     st.markdown(
         """
-        <h2>📚 BookWise</h2>
+        <div class="sidebar-brand">
+
+            <div class="sidebar-logo">📚</div>
+
+            <div class="sidebar-title">
+                BookWise
+            </div>
+
+            <div class="sidebar-subtitle">
+                AI Book Recommendation System
+            </div>
+
+        </div>
         """,
         unsafe_allow_html=True
     )
 
     st.markdown("---")
 
-    st.markdown("### 🤖 Recommendation Models")
+    st.markdown(
+        '<div class="sidebar-section">Recommendation Models</div>',
+        unsafe_allow_html=True
+    )
 
-    st.write("• Popularity-Based")
-    st.write("• Content-Based")
-    st.write("• Collaborative Filtering")
-    st.write("• SVD")
-    st.write("• Hybrid")
+    st.markdown(
+        """
+        <div class="model-item">📈 Popularity-Based</div>
+        <div class="model-item">📖 Content-Based TF-IDF</div>
+        <div class="model-item">👥 Collaborative Filtering</div>
+        <div class="model-item">🧮 SVD</div>
+        <div class="model-item">🤖 Hybrid Recommendation</div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="sidebar-section">Hybrid Configuration</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        f"""
+        <div class="weight-item">
+            <span>Content</span>
+            <span class="weight-value">
+                {hybrid_config.get("content_weight", 0.30):.0%}
+            </span>
+        </div>
+
+        <div class="weight-item">
+            <span>Collaborative</span>
+            <span class="weight-value">
+                {hybrid_config.get("collaborative_weight", 0.30):.0%}
+            </span>
+        </div>
+
+        <div class="weight-item">
+            <span>SVD</span>
+            <span class="weight-value">
+                {hybrid_config.get("svd_weight", 0.20):.0%}
+            </span>
+        </div>
+
+        <div class="weight-item">
+            <span>Popularity</span>
+            <span class="weight-value">
+                {hybrid_config.get("popularity_weight", 0.20):.0%}
+            </span>
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
 
     st.markdown("---")
 
-    st.markdown("### ⚙️ Hybrid Weights")
+    st.markdown(
+        f"""
+        <div class="stat-card">
+            <div class="stat-number">5</div>
+            <div class="stat-label">ML Recommendation Models</div>
+        </div>
 
-    st.write(
-        f"Content: {hybrid_config.get('content_weight', 0.30):.0%}"
-    )
-
-    st.write(
-        f"Collaborative: {hybrid_config.get('collaborative_weight', 0.30):.0%}"
-    )
-
-    st.write(
-        f"SVD: {hybrid_config.get('svd_weight', 0.20):.0%}"
-    )
-
-    st.write(
-        f"Popularity: {hybrid_config.get('popularity_weight', 0.20):.0%}"
+        <div class="stat-card">
+            <div class="stat-number">10</div>
+            <div class="stat-label">Books Recommended</div>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
     st.markdown("---")
 
     st.caption(
-        "Machine Learning Book Recommendation System"
+        "Built with Python • Scikit-learn • Streamlit"
     )
 
 
@@ -977,12 +1406,38 @@ st.markdown(
     """
     <div class="hero">
 
-        <h1>📚 BookWise</h1>
+        <div class="hero-icon">
+            📚
+        </div>
+
+        <h1>
+            Book<span class="hero-highlight">Wise</span>
+        </h1>
 
         <p>
-            Discover your next favorite book with
-            Machine Learning powered recommendations.
+            Discover books you'll love through
+            Machine Learning powered recommendations
+            based on reading behavior, content similarity,
+            collaborative patterns and popularity.
         </p>
+
+        <div class="hero-badges">
+            <span class="hero-badge">
+                🤖 Machine Learning
+            </span>
+
+            <span class="hero-badge">
+                📖 Content Intelligence
+            </span>
+
+            <span class="hero-badge">
+                👥 Collaborative Filtering
+            </span>
+
+            <span class="hero-badge">
+                ⚡ Hybrid Recommendation
+            </span>
+        </div>
 
     </div>
     """,
@@ -991,35 +1446,46 @@ st.markdown(
 
 
 # ============================================================
-# SEARCH AREA
+# SEARCH PANEL
 # ============================================================
 
 st.markdown(
     """
-    <div class="search-card">
+    <div class="search-panel">
+
+        <div class="search-title">
+            🔍 Find Your Next Read
+        </div>
+
+        <div class="search-description">
+            Enter your User ID and let BookWise generate
+            personalized book recommendations.
+        </div>
+
     """,
     unsafe_allow_html=True
 )
 
-st.markdown(
-    "### 🔍 Find Your Recommendations"
+search_col1, search_col2 = st.columns(
+    [3, 1],
+    gap="medium"
 )
 
-st.write(
-    "Enter your User ID to receive personalized book recommendations."
-)
+with search_col1:
 
-user_id_input = st.text_input(
-    "User ID",
-    placeholder="Example: 276704",
-    label_visibility="collapsed"
-)
+    user_id_input = st.text_input(
+        "User ID",
+        placeholder="Example: 276704",
+        label_visibility="collapsed"
+    )
 
-get_recommendations = st.button(
-    "🚀 Get My Recommendations",
-    type="primary",
-    use_container_width=True
-)
+with search_col2:
+
+    get_recommendations = st.button(
+        "🚀 Get Recommendations",
+        type="primary",
+        use_container_width=True
+    )
 
 st.markdown(
     "</div>",
@@ -1068,7 +1534,7 @@ if get_recommendations:
         st.stop()
 
     with st.spinner(
-        "🔮 Finding books for you..."
+        "🔮 Analyzing your reading preferences..."
     ):
 
         recommendations = recommend_hybrid(
@@ -1085,81 +1551,142 @@ if get_recommendations:
         st.stop()
 
     st.markdown(
-        '<div class="section-title">✨ Recommended For You</div>',
+        """
+        <div class="section-header">
+
+            <div>
+                <div class="section-title">
+                    ✨ Recommended For You
+                </div>
+
+                <div class="section-subtitle">
+                    Personalized results generated by the Hybrid ML recommendation system
+                </div>
+            </div>
+
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-    for rank, isbn in enumerate(
-        recommendations,
-        start=1
+    # ========================================================
+    # DISPLAY BOOKS IN 3-COLUMN GRID
+    # ========================================================
+
+    for row_start in range(
+        0,
+        len(recommendations),
+        3
     ):
 
-        title = title_map.get(
-            isbn,
-            "Unknown Title"
-        )
+        row_books = recommendations[
+            row_start:row_start + 3
+        ]
 
-        author = author_map.get(
-            isbn,
-            "Unknown Author"
-        )
-
-        publisher = publisher_map.get(
-            isbn,
-            "Unknown Publisher"
-        )
-
-        image_url = clean_image_url(
-            image_map.get(
-                isbn,
-                ""
-            )
-        )
-
-        col1, col2 = st.columns(
-            [1, 4],
+        columns = st.columns(
+            3,
             gap="large"
         )
 
-        with col1:
+        for position, isbn in enumerate(
+            row_books
+        ):
 
-            if image_url:
+            rank = row_start + position + 1
 
-                st.image(
-                    image_url,
-                    width=150
+            title = safe_text(
+                title_map.get(
+                    isbn,
+                    "Unknown Title"
+                ),
+                "Unknown Title"
+            )
+
+            author = safe_text(
+                author_map.get(
+                    isbn,
+                    "Unknown Author"
+                ),
+                "Unknown Author"
+            )
+
+            publisher = safe_text(
+                publisher_map.get(
+                    isbn,
+                    "Unknown Publisher"
+                ),
+                "Unknown Publisher"
+            )
+
+            isbn_display = safe_text(
+                isbn,
+                "Unknown ISBN"
+            )
+
+            image_url = clean_image_url(
+                image_map.get(
+                    isbn,
+                    ""
                 )
+            )
 
-            else:
+            with columns[position]:
 
                 st.markdown(
-                    """
-                    <div style="
-                        width:150px;
-                        height:210px;
-                        border-radius:12px;
-                        background:#e2e8f0;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-size:50px;
-                    ">
-                    📕
+                    '<div class="book-card">',
+                    unsafe_allow_html=True
+                )
+
+                st.markdown(
+                    f"""
+                    <div class="rank-row">
+
+                        <span class="rank">
+                            #{rank}
+                        </span>
+
+                        <span class="ml-badge">
+                            Hybrid Match
+                        </span>
+
                     </div>
                     """,
                     unsafe_allow_html=True
                 )
 
-        with col2:
+                if image_url:
 
-            st.markdown(
-                f"""
-                <div class="book-card">
+                    st.markdown(
+                        f"""
+                        <div class="book-image-container">
 
-                    <div class="rank">
-                        #{rank}
-                    </div>
+                            <img
+                                src="{html.escape(image_url, quote=True)}"
+                                alt="Book cover"
+                            />
 
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                else:
+
+                    st.markdown(
+                        """
+                        <div class="book-image-container">
+
+                            <div class="book-placeholder">
+                                📕
+                            </div>
+
+                        </div>
+                        """,
+                        unsafe_allow_html=True
+                    )
+
+                st.markdown(
+                    f"""
                     <div class="book-title">
                         {title}
                     </div>
@@ -1173,13 +1700,16 @@ if get_recommendations:
                     </div>
 
                     <div class="book-isbn">
-                        ISBN: {isbn}
+                        ISBN: {isbn_display}
                     </div>
+                    """,
+                    unsafe_allow_html=True
+                )
 
-                </div>
-                """,
-                unsafe_allow_html=True
-            )
+                st.markdown(
+                    "</div>",
+                    unsafe_allow_html=True
+                )
 
 
 # ============================================================
@@ -1189,61 +1719,160 @@ if get_recommendations:
 if not get_recommendations:
 
     st.markdown(
-        '<div class="section-title">🧠 How It Works</div>',
+        """
+        <div class="info-title">
+            🧠 How BookWise Works
+        </div>
+        """,
         unsafe_allow_html=True
     )
 
-    col1, col2, col3 = st.columns(3)
+    info_col1, info_col2, info_col3 = st.columns(
+        3,
+        gap="large"
+    )
 
-    with col1:
+    with info_col1:
 
         st.markdown(
             """
             <div class="info-card">
 
-            <h3>📖 Content-Based</h3>
+                <div class="info-icon">
+                    📖
+                </div>
 
-            <p>
-            Finds books with similar titles, authors
-            and publishers using TF-IDF and cosine similarity.
-            </p>
+                <h3>
+                    Content-Based
+                </h3>
+
+                <p>
+                    Uses TF-IDF and cosine similarity
+                    to identify books with similar
+                    content characteristics such as
+                    title, author and publisher.
+                </p>
 
             </div>
             """,
             unsafe_allow_html=True
         )
 
-    with col2:
+    with info_col2:
 
         st.markdown(
             """
             <div class="info-card">
 
-            <h3>👥 Collaborative</h3>
+                <div class="info-icon">
+                    👥
+                </div>
 
-            <p>
-            Uses similar users and their book-rating
-            behavior to discover relevant books.
-            </p>
+                <h3>
+                    Collaborative Filtering
+                </h3>
+
+                <p>
+                    Finds users with similar reading
+                    behavior and uses their interactions
+                    to discover books that may interest
+                    the target user.
+                </p>
 
             </div>
             """,
             unsafe_allow_html=True
         )
 
-    with col3:
+    with info_col3:
 
         st.markdown(
             """
             <div class="info-card">
 
-            <h3>🤖 Hybrid AI</h3>
+                <div class="info-icon">
+                    🤖
+                </div>
 
-            <p>
-            Combines content, collaborative, SVD and
-            popularity signals into one recommendation ranking.
-            </p>
+                <h3>
+                    Hybrid Intelligence
+                </h3>
 
+                <p>
+                    Combines Content, Collaborative,
+                    SVD and Popularity signals into
+                    a single recommendation ranking.
+                </p>
+
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+
+# ============================================================
+# TECHNOLOGY SECTION
+# ============================================================
+
+if not get_recommendations:
+
+    st.markdown(
+        """
+        <div class="info-title">
+            ⚙️ Technology Stack
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
+    tech1, tech2, tech3, tech4 = st.columns(
+        4,
+        gap="medium"
+    )
+
+    with tech1:
+
+        st.markdown(
+            """
+            <div class="stat-card">
+                <div class="stat-number">🐍</div>
+                <div class="stat-label">Python</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with tech2:
+
+        st.markdown(
+            """
+            <div class="stat-card">
+                <div class="stat-number">🧠</div>
+                <div class="stat-label">Scikit-learn</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with tech3:
+
+        st.markdown(
+            """
+            <div class="stat-card">
+                <div class="stat-number">📊</div>
+                <div class="stat-label">Machine Learning</div>
+            </div>
+            """,
+            unsafe_allow_html=True
+        )
+
+    with tech4:
+
+        st.markdown(
+            """
+            <div class="stat-card">
+                <div class="stat-number">🚀</div>
+                <div class="stat-label">Streamlit</div>
             </div>
             """,
             unsafe_allow_html=True
@@ -1258,11 +1887,16 @@ st.markdown(
     """
     <div class="footer">
 
-        📚 <b>BookWise</b> — Machine Learning Book Recommendation System
+        📚 <strong>BookWise</strong>
+        — Machine Learning Book Recommendation System
 
-        <br><br>
+        <br>
 
         Built with Python • Scikit-learn • Streamlit • Machine Learning
+
+        <br>
+
+        Hybrid Recommendation • Content Similarity • Collaborative Filtering • SVD
 
     </div>
     """,
