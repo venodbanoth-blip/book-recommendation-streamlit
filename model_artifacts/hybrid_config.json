@@ -1,0 +1,11 @@
+{
+    "model_name": "Hybrid",
+    "top_n": 10,
+    "content_weight": 0.3,
+    "collaborative_weight": 0.3,
+    "svd_weight": 0.2,
+    "popularity_weight": 0.2,
+    "tfidf_max_features": 10000,
+    "svd_components": 30,
+    "random_state": 42
+}
